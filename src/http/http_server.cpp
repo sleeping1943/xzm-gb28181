@@ -266,7 +266,7 @@ int XHttpServer::on_publish(HttpRequest* req, HttpResponse* resp)
     //resp->http_cb;
     auto json = req->GetJson();
     HV_JSON_GET_STRING(json, app, "app"); // 流应用名
-    HV_JSON_GET_STRING(json, ip, "ip"); // 播放器ip
+    HV_JSON_GET_STRING(json, ip, "ip"); // 国标设备ip
     HV_JSON_GET_STRING(json, id, "id"); // TCP链接唯一ID
     HV_JSON_GET_STRING(json, params, "params"); // 播放url参数
     HV_JSON_GET_STRING(json, schema, "schema"); // 播放的协议，可能是rtsp、rtmp、http
@@ -276,7 +276,7 @@ int XHttpServer::on_publish(HttpRequest* req, HttpResponse* resp)
     HV_JSON_GET_INT(json, port, "port"); // 播放器端口号
 
     std::stringstream ss;
-    ss << "rtsp://" << ip << "/rtp/" << stream;
+    ss << "rtsp://" << Server::instance()->GetServerInfo().ip << "/rtp/" << stream;
     std::cout << RED
     << "app:" << app << std::endl
     << "id:" << id << std::endl

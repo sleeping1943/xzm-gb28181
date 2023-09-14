@@ -185,6 +185,7 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientPtr client)
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
     sprintf(contact, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
     sprintf(to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
+    /*
     snprintf (sdp, 2048,
               "v=0\r\n"
               "o=%s 0 0 IN IP4 %s\r\n"
@@ -200,6 +201,24 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientPtr client)
               "f=v/a/1/8/1=\r\n", client->device.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
               //"y=0100000001\r\n"
               //"f=\r\n", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port);
+    */
+    snprintf (sdp, 2048,
+              "v=0\r\n"
+              "o=%s 0 0 IN IP4 %s\r\n"
+              "s=Play\r\n"
+              "c=IN IP4 %s\r\n"
+              "t=0 0\r\n"
+              "m=audio %d RTP/AVP 8\r\n"
+              "a=sendonly\r\n"
+              "a=rtpmap:8 PCMA/8000\r\n"
+              "a=rtpmap:96 PS/90000\r\n"
+              "a=setup:passive\r\n"
+              "a=connection:new\r\n"
+              "y=%s\r\n"
+              "f=v/////a/1/8/1\r\n", client->device.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
+              //"y=0100000001\r\n"
+              //"f=\r\n", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port);
+             // f字段说明:v/编码格式/分辨率/帧率/码率类型/码率大小a/编码格式/码率大小/采样率
 
     int ret = eXosip_call_build_initial_invite(sip_context, &msg, to, from,  nullptr, nullptr);
     if (ret) {
