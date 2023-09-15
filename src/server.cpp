@@ -143,6 +143,21 @@ bool Server::IsClientExist(const std::string& device)
     return false;
 }
 
+bool Server::IsClientAudioExist(const std::string& device)
+{
+    ReadLock _lock(client_mutex_);
+    for (const auto& iter : clients_) {
+        const ClientPtr client = iter.second;
+        for (const auto& iter_info : client->client_infos_) {
+            const auto& client_info = iter_info.second;
+            if (client_info->device_id == device) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 ClientPtr Server::FindClient(const std::string& device)
 {
     ClientPtr client_ptr = nullptr;

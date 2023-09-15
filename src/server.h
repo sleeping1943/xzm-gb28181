@@ -50,6 +50,7 @@ public:
     bool Start();
     bool Stop();
     bool IsClientExist(const std::string& device);
+    bool IsClientAudioExist(const std::string& device);
     ClientPtr FindClient(const std::string& device);
     bool AddClient(ClientPtr client);
     bool UpdateClientInfo(const std::string& device_id,
