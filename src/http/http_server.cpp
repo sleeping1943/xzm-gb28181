@@ -179,11 +179,17 @@ int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)
     }
     auto req_ptr = std::make_shared<ClientRequest>();
     req_ptr->client_ptr = client_ptr;
+    auto s_info = Server::instance()->GetServerInfo();
+    client_ptr->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
+    auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);
+    client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
     req_ptr->req_type = kRequestTypeInvite;
     Server::instance()->AddRequest(req_ptr);
+    CLOGI(RED, "seond invite request...............................");
     resp->json["code"] = 0; // 鉴权成功
     resp->json["data"]["device"] = device;
     resp->json["data"]["action"] = "start_rtsp_publish";
+    resp->json["data"]["rtsp"] = client_ptr->rtsp_url;
     resp->json["msg"] = "success";
     return kHttpOK;
 }
@@ -277,6 +283,7 @@ int XHttpServer::on_publish(HttpRequest* req, HttpResponse* resp)
 
     std::stringstream ss;
     ss << "rtsp://" << Server::instance()->GetServerInfo().ip << "/rtp/" << stream;
+    std::string rtsp_url = ss.str();
     std::cout << RED
     << "app:" << app << std::endl
     << "id:" << id << std::endl
@@ -287,7 +294,7 @@ int XHttpServer::on_publish(HttpRequest* req, HttpResponse* resp)
     << "stream:" << stream << std::endl
     << "vhost:" << vhost << std::endl
     << "media_server_id:" << media_server_id << std::endl
-    << "rtsp_url:" << ss.str() << std::endl << DEFAULT_COLOR;
+    << "rtsp_url:" << rtsp_url << std::endl << DEFAULT_COLOR;
     resp->json["code"] = 0; // 鉴权成功
     resp->json["msg"] = "success";
     return kHttpOK; // http调用成功

@@ -66,10 +66,11 @@ void Handler::response_message(eXosip_event_t *evtp, eXosip_t * sip_context_, in
         request_bye(evtp, sip_context_);
         return;
     }
-    //if (!Server::instance()->IsClientExist(DeviceID)) {  // 服务器没有此客户端信息,断开连接
-    //    request_bye(evtp, sip_context_);
-    //    return;
-    //} else 
+    if (!Server::instance()->IsClientExist(DeviceID)
+    && !Server::instance()->IsClientAudioExist(DeviceID)) {  // 服务器没有此客户端信息,也不是音频通道ID,断开连接
+        request_bye(evtp, sip_context_);
+        return;
+    }
 
     LOGI("CmdType=%s,DeviceID=%s", CmdType,DeviceID);
 
@@ -116,11 +117,13 @@ int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
     char contact[1024] = {0};
     char sdp[2048] = {0};
     char head[1024] = {0};
-
+    /*
+        在http请求推流时就确定rtsp推流地址
+    */
     auto s_info = Server::instance()->GetServerInfo();
-    client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
-    auto ssrc = Xzm::util::convert10to16(client->ssrc);
-    client->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
+    //client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
+    //auto ssrc = Xzm::util::convert10to16(client->ssrc);
+    //client->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
     
     CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
@@ -208,12 +211,12 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientPtr client)
               "s=Play\r\n"
               "c=IN IP4 %s\r\n"
               "t=0 0\r\n"
-              "m=audio %d RTP/AVP 8\r\n"
-              "a=sendonly\r\n"
+              "m=audio %d TCP/RTP/AVP 8 96\r\n"
+              "a=recvonly\r\n"  // SIP服务器收取音频数据
               "a=rtpmap:8 PCMA/8000\r\n"
               "a=rtpmap:96 PS/90000\r\n"
-              "a=setup:passive\r\n"
-              "a=connection:new\r\n"
+              "a=setup:passive\r\n" // TCP被动模式
+              "a=connection:new\r\n"    // 每次新建连接
               "y=%s\r\n"
               "f=v/////a/1/8/1\r\n", client->device.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
               //"y=0100000001\r\n"
