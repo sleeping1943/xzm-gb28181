@@ -7,6 +7,7 @@
 #include "../utils/http_digest.h"
 #include "../utils/log.h"
 #include "../utils/helper.h"
+#include "../xzm_defines.h"
 
 namespace Xzm
 {
@@ -80,9 +81,10 @@ bool RegisterHandler::register_client(eXosip_event_t *evtp, eXosip_t* sip_contex
         }
         LOGI("user_agent[name:%s value:%s]", user_agent->hname, user_agent->hvalue);
         std::string user_agent_type(user_agent->hvalue);
-        if (user_agent_type.compare("IP Camera")) {
+        if (kRegistedClientType.count(user_agent_type) <= 0) {
             break;
         }
+        client->client_type = kRegistedClientType.at(user_agent_type);
         client->client_type = kClientIPC;
     } while (0);
     do {

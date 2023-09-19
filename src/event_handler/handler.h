@@ -14,6 +14,7 @@
 #include <iostream>
 #include "eXosip2/eXosip.h"
 #include <memory>
+#include <random>
 #include "../xzm_defines.h"
 
 namespace Xzm
@@ -37,6 +38,7 @@ public:
     int request_invite(eXosip_t *sip_context, ClientPtr client);
     int request_invite_talk(eXosip_t *sip_context, ClientPtr client);
     int request_device_query(eXosip_t *sip_context, ClientPtr client);
+    int request_query_device_library(eXosip_t *sip_context, ClientPtr client);
     int request_broadcast(eXosip_t *sip_context, ClientPtr client);
     int parse_xml(const char *data, const char *s_mark, bool with_s_make,
         const char *e_mark, bool with_e_make, char *dest);
@@ -46,8 +48,11 @@ public:
     void dump_request(eXosip_event_t *evtp);
     void dump_response(eXosip_event_t *evtp);
 
+    int get_random_sn();
+
 private:
     std::atomic_bool is_print;
+    static uint64_t sn_;   // 命令序列号
 };
 using HandlerPtr = std::shared_ptr<Handler>;
 };

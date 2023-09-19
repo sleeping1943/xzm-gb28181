@@ -191,7 +191,19 @@ bool Server::UpdateClientInfo(const std::string& device_id,
     if (device == clients_.end()) { // 未找到对应的已注册设备
         return false;
     }
-    device->second->client_infos_ = client_infos;
+    for (const auto& iter : client_infos) {
+        const auto& client_info = iter.second;
+        auto& registed_clients = device->second->client_infos_;
+        if (registed_clients.empty() || registed_clients.count(client_info->device_id) <= 0) {  // 没有该设备
+            registed_clients[client_info->device_id] = client_info;
+        }
+    }
+    //for (const auto& client_info : device->second->client_infos_) {
+    //    if (device->second->client_infos_.count(client_info.second->device_id) <= 0) {   
+    //        device->second->client_infos_[client_info.second->device_id] = client_info.second;
+    //    }
+    //}
+    //device->second->client_infos_ = client_infos;
     return true;
 }
 bool Server::RemoveClient(const std::string& device)
@@ -315,6 +327,14 @@ int Server::process_request()
         case kRequestTypeBroadcast:
             CLOGI(RED, "process request broadcast..................................");
             kDefaultHandler->request_broadcast(sip_context_, client_req->client_ptr);
+        break;
+        case kRequestTypeScanDevice:
+            CLOGI(RED, "process request scan device..................................");
+            kDefaultHandler->request_device_query(sip_context_, client_req->client_ptr);
+        break;
+        case kRequestTypeQueryLibrary:
+            CLOGI(RED, "process request query library..................................");
+            kDefaultHandler->request_query_device_library(sip_context_, client_req->client_ptr);
         break;
         default:
         break;

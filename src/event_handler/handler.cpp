@@ -1,18 +1,27 @@
 #include "handler.h"
 #include "../utils/log.h"
+#include <chrono>
 #include <osipparser2/osip_message.h>
 #include <osipparser2/osip_parser.h>
 #include <ostream>
+#include <random>
 #include <string.h>
 #include "../server.h"
 #include "../utils/helper.h"
 #include "../utils/tinyxml2.h"
+#include "../msg_builder/msg_builder.h"
 
 using tinyxml2::XMLDocument;
 using tinyxml2::XMLError;
 using tinyxml2::XMLElement;
 
+using std::chrono::seconds;
+using std::chrono::duration_cast;
+using std::chrono::system_clock;
+
 namespace Xzm {
+
+uint64_t Handler::sn_ = 10000;
 
 Handler::Handler()
 {
@@ -260,9 +269,9 @@ int Handler::request_device_query(eXosip_t *sip_context, ClientPtr client)
     "<?xml version=\"1.0\"?>"\
     "<Query>"   \
     "<CmdType>Catalog</CmdType>"    \
-    /*"<SN>248</SN>"  \*/
+    "<SN>%d</SN>"  \
     "<DeviceID>%s</DeviceID>" \
-    "</Query>", client->device.c_str()
+    "</Query>", get_random_sn(), client->device.c_str()
     );
 
     osip_message_t *message = nullptr;
@@ -272,6 +281,39 @@ int Handler::request_device_query(eXosip_t *sip_context, ClientPtr client)
     eXosip_lock(sip_context);
     int ret = eXosip_message_send_request(sip_context, message);
     CLOGI(RED, "send device query ret:%d", ret);
+    eXosip_unlock(sip_context);
+    return 0;
+}
+
+int Handler::request_query_device_library(eXosip_t *sip_context, ClientPtr client)
+{
+    if (!sip_context || !client) {
+        return -1;
+    }
+    char str_from[512] = {0};
+    char str_to[512] = {0};
+    auto s_info = Server::instance()->GetServerInfo();
+    sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
+    sprintf(str_to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
+    auto temp_ptr = std::make_shared<XmlQueryLibraryParam>();
+
+    seconds end_secs = duration_cast<seconds>(system_clock::now().time_since_epoch());
+    XmlQueryLibraryParamPtr params_ptr = std::make_shared<XmlQueryLibraryParam>();
+    params_ptr->device_id = client->device;
+    params_ptr->cmd = "RecordInfo";
+    params_ptr->query_type = kXmlQueryFileLibrary;
+    params_ptr->start_time = end_secs.count() - 3600;
+    params_ptr->end_time = end_secs.count();
+    params_ptr->sn = ++sn_;
+    std::string str_body = MsgBuilder::instance()->BuildMsg(params_ptr);
+
+    osip_message_t *message = nullptr;
+    eXosip_message_build_request(sip_context, &message, "MESSAGE", str_to, str_from, nullptr);
+    osip_message_set_body(message, str_body.c_str(), str_body.length());
+    osip_message_set_content_type(message, "Application/MANSCDP+xml");
+    eXosip_lock(sip_context);
+    int ret = eXosip_message_send_request(sip_context, message);
+    CLOGI(RED, "send query device library ret:%d", ret);
     eXosip_unlock(sip_context);
     return 0;
 }
@@ -467,21 +509,12 @@ void Handler::dump_response(eXosip_event_t *evtp)
     osip_message_to_str(evtp->response, &s, &len);
     CLOGI(BLUE, "\n********************print response start\ttype=%d********************\n%s\n********************print response end********************\n",evtp->type,s);
 }
-};
 
-/*
-"v=0\r\n
-o=34020000002000000001 0 0 IN IP4 10.23.132.27\r\n
-s=Play\r\n
-c=IN IP4 10.23.132.27\r\n
-t=0 0\r\n
-m=video 10000 TCP/RTP/AVP 96 98 97\r\n
-a=recvonly\r\n
-a=rtpmap:96 PS/90000\r\n
-a=rtpmap:98 H264/90000\r\n
-a=rtpmap:97 MPEG4/90000\r\n
-a=setup:passive\r\n
-a=connection:new\r\n
-y=0200002495\r\n
-f=\r\n"
-*/
+int Handler::get_random_sn()
+{
+    std::default_random_engine e;
+    std::uniform_int_distribution<int> u(9999, 100000);
+    e.seed(time(0));
+    return u(e);
+}
+};

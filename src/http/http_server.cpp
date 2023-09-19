@@ -53,6 +53,10 @@ bool XHttpServer::Init(const std::string& conf_path)
     std::bind(&XHttpServer::start_invite_talk, this, std::placeholders::_1, std::placeholders::_2));
     router.GET("/start_talk_broadcast",
     std::bind(&XHttpServer::start_talk_broadcast, this, std::placeholders::_1, std::placeholders::_2));
+    router.GET("/scan_device_list",
+    std::bind(&XHttpServer::scan_device_list, this, std::placeholders::_1, std::placeholders::_2));
+    router.GET("/query_device_library",
+    std::bind(&XHttpServer::query_device_library, this, std::placeholders::_1, std::placeholders::_2));
     return true;
 }
 
@@ -75,6 +79,26 @@ bool XHttpServer::Run()
         http_server_run(&server_);
     });
     return true;
+}
+
+int XHttpServer::scan_device_list(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "错误的device_id"));
+    }
+    auto client_ptr = Server::instance()->FindClient(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(101, "can not find the device client"));
+    }
+    auto req_ptr = std::make_shared<ClientRequest>();
+    req_ptr->client_ptr = client_ptr;
+    req_ptr->req_type = kRequestTypeScanDevice;
+    Server::instance()->AddRequest(req_ptr);
+    resp->json["code"] = 0;
+    resp->json["data"]["action"] = "scan_device_list";
+    resp->json["msg"] = "success";
+    return kHttpOK;
 }
 
 int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
@@ -165,6 +189,26 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
     resp->json["data"]["action"] = "query_device_list";
     resp->json["msg"] = "success";
     return resp->String(device_list);
+}
+
+int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "错误的device_id"));
+    }
+    auto client_ptr = Server::instance()->FindClient(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(101, "can not find the device client"));
+    }
+    auto req_ptr = std::make_shared<ClientRequest>();
+    req_ptr->client_ptr = client_ptr;
+    req_ptr->req_type = kRequestTypeQueryLibrary;
+    Server::instance()->AddRequest(req_ptr);
+    resp->json["code"] = 0;
+    resp->json["data"]["action"] = "query_device_list";
+    resp->json["msg"] = "success";
+    return kHttpOK;
 }
 
 int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)

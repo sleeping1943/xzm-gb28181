@@ -121,6 +121,7 @@ enum XClientType
 {
     kClientNone = 0,    // 未知
     kClientIPC,         // 网络摄像头
+    kClientNVR,         // NVR设备
     kClientMax,         // 无
 };
 
@@ -133,9 +134,92 @@ enum RequestType
     kRequestTypeTalk,   // 建立对讲请求
     kRequestTypeCancelTalk, // 断开对讲请求
     kRequestTypeBroadcast,  // 对讲广播
+    kRequestTypeScanDevice,     // 扫描设备信息
+    kRequestTypeQueryLibrary,  // 查询设备目录
     kRequestTypeMax = 9999,
 
 };
+
+/*国标xml查询类型*/
+enum XmlQueryType
+{
+    kXmlQueryNone = 0,
+    kXmlQueryFileLibrary,   // 文件目录检索
+    kXmlQueryMax,
+};
+
+/* 国标设备类型*/
+const static std::unordered_map<std::string, XClientType> kRegistedClientType = {
+{"Embedded Net DVR/NVR/DVS", kClientNVR },
+{"IP Camera", kClientIPC },
+};
+
+/* xml消息的查询参数信息 */
+class XmlQueryParam
+{
+public:
+    XmlQueryParam();
+    //XmlQueryParam(XmlQueryType _q_type, const std::string& _cmd, uint64_t _sn, const std::string& _device_id);
+    virtual ~XmlQueryParam();
+
+    std::string cmd;
+    uint64_t sn;
+    std::string device_id;
+    XmlQueryType query_type;
+};
+using XmlQueryParamPtr = std::shared_ptr<XmlQueryParam>;
+
+/* 文件检索参数 */
+class XmlQueryLibraryParam : public XmlQueryParam
+{
+public:
+    XmlQueryLibraryParam();
+    ~XmlQueryLibraryParam();
+
+    uint64_t start_time;    // 必选 录像检索开始时间
+    uint64_t end_time;      // 必选 录像检索终止时间
+    std::string file_path;  // 可选 文件路径名
+    std::string address;    // 可选 录像地址,支持不完全查询
+    int secrecy = 0;    // 保密属性 0-不涉密 1-涉密
+    std::string type;   // 录像产生类型 time/alarm/manual/all
+    std::string recorder_id;    // 可选 录像触发者ID
+    std::string indistinct_query;   // 可选 录像模糊查询属性,缺省为0 0-不进行模糊查询
+    unsigned short stream_number = 0;      // 可选 码流编号 0-主码流 1-子码流 2-子码流 3-以此类推
+    unsigned short alarm_method = 0;       // 可选 报警方式条件 0-全部
+    unsigned short alarm_type = 0;         // 可选 报警类型
+};
+using XmlQueryLibraryParamPtr = std::shared_ptr<XmlQueryLibraryParam>;
+
+/* xml消息体 */
+class XmlQueryInfo
+{
+public:
+    XmlQueryInfo()
+    {
+
+    }
+    virtual ~XmlQueryInfo()
+    {
+
+    }
+
+    std::string BuildMsg(const XmlQueryParamPtr& msg_in);
+    virtual std::string ExtroXmlQueryParamfo(const XmlQueryParamPtr& msg_in);
+};
+using XmlQueryInfoPtr = std::shared_ptr<XmlQueryInfo>;
+
+/* 文件检索消息体 */
+class XmlQueryLibraryInfo : public XmlQueryInfo
+{
+public:
+    XmlQueryLibraryInfo();
+    ~XmlQueryLibraryInfo();
+
+    virtual std::string ExtroXmlQueryParamfo(const XmlQueryParamPtr& msg_in) override;
+
+};
+using XmlQueryLibraryInfoPtr = std::shared_ptr<XmlQueryLibraryInfo>;
+
 /* sip服务器配置信息 */
 struct ServerInfo
 {

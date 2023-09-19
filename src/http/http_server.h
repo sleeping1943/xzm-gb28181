@@ -32,6 +32,15 @@ public:
 private:
     XHttpServer();
     /**
+     * @brief 根据device_id扫描设备信息
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int scan_device_list(HttpRequest* req, HttpResponse* resp);
+
+    /**
      * @brief 查询已注册设备信息
      * 
      * @param req 
@@ -39,6 +48,16 @@ private:
      * @return int 
      */
     int query_device_list(HttpRequest* req, HttpResponse* resp);
+
+    /**
+     * @brief 查询设备目录信息
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int query_device_library(HttpRequest* req, HttpResponse* resp);
+
     /**
      * @brief 请求指定设备开启推流
      * 
@@ -47,6 +66,7 @@ private:
      * @return int 
      */
     int start_rtsp_publish(HttpRequest* req, HttpResponse* resp);
+
     /**
      * @brief 使指定设备结束推流
      * 
@@ -55,6 +75,7 @@ private:
      * @return int 
      */
     int stop_rtsp_publish(HttpRequest* req, HttpResponse* resp);
+
     /**
      * @brief 指定设备开始对讲
      * 
@@ -62,6 +83,7 @@ private:
      * @param resp 
      * @return int 
      */
+
     int start_invite_talk(HttpRequest* req, HttpResponse* resp);
     /**
      * @brief 指定设备结束对讲
@@ -89,6 +111,7 @@ private:
      * @return int 
      */
     int on_publish(HttpRequest* req, HttpResponse* resp);
+
     /**
      * @brief 客户端请求播放流的回调及鉴权函数
      * 

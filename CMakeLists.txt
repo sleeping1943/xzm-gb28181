@@ -104,17 +104,19 @@ target_link_options(gb28181-server PRIVATE
     -m64
 )
 target_sources(gb28181-server PRIVATE
+    src/xzm_defines.cpp
     src/server.cpp
     src/main.cpp
-    src/event_handler/call_answer_handler.cpp
     src/event_handler/handler.cpp
+    src/event_handler/call_answer_handler.cpp
     src/event_handler/register_handler.cpp
     src/http/http_server.cpp
+    src/utils/http_digest.cpp
+    src/utils/tinyxml2.cpp
+    src/utils/singleton.cpp
+    src/utils/json_helper.cpp
     src/utils/md5.cpp
     src/utils/helper.cpp
-    src/utils/singleton.cpp
-    src/utils/tinyxml2.cpp
-    src/utils/json_helper.cpp
-    src/utils/http_digest.cpp
+    src/msg_builder/msg_builder.cpp
 )
 
