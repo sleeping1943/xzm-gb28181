@@ -8,6 +8,7 @@
 #include <mutex>
 #include <ostream>
 #include "../server.h"
+#include "../utils/time.h"
 
 namespace Xzm
 {
@@ -212,11 +213,34 @@ int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
     if (device_id.empty()) {
         return resp->String(get_simple_info(400, "错误的device_id"));
     }
-    auto client_ptr = Server::instance()->FindClient(device_id);
+    std::string start_time = req->GetParam("start_time");
+    if (start_time.empty()) {
+        return resp->String(get_simple_info(400, "错误的start_time"));
+    }
+    std::string end_time = req->GetParam("end_time");
+    if (end_time.empty()) {
+        return resp->String(get_simple_info(400, "错误的end_time"));
+    }
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
     if (!client_ptr) {
         return resp->String(get_simple_info(101, "can not find the device client"));
     }
     auto req_ptr = std::make_shared<ClientRequest>();
+
+    {
+        Xzm::_time_point pt;
+        Xzm::Timer timer;
+        XmlQueryLibraryParamPtr params_ptr = std::make_shared<XmlQueryLibraryParam>();
+        client_ptr->param_ptr = params_ptr;
+        params_ptr->device_id = device_id;
+        params_ptr->cmd = "RecordInfo";
+        params_ptr->query_type = kXmlQueryFileLibrary;
+        timer.from_string(start_time, Xzm::TIME_FORMAT, pt);
+        timer.to_string(pt, Xzm::TIME_FORMAT, params_ptr->start_time);
+        timer.from_string(end_time, Xzm::TIME_FORMAT, pt);
+        timer.to_string(pt, Xzm::TIME_FORMAT, params_ptr->end_time);
+    }
+    client_ptr->real_device_id = device_id;
     req_ptr->client_ptr = client_ptr;
     req_ptr->req_type = kRequestTypeQueryLibrary;
     Server::instance()->AddRequest(req_ptr);

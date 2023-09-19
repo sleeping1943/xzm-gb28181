@@ -176,8 +176,8 @@ public:
     XmlQueryLibraryParam();
     ~XmlQueryLibraryParam();
 
-    uint64_t start_time;    // 必选 录像检索开始时间
-    uint64_t end_time;      // 必选 录像检索终止时间
+    std::string start_time;    // 必选 录像检索开始时间
+    std::string end_time;      // 必选 录像检索终止时间
     std::string file_path;  // 可选 文件路径名
     std::string address;    // 可选 录像地址,支持不完全查询
     int secrecy = 0;    // 保密属性 0-不涉密 1-涉密
@@ -306,6 +306,7 @@ struct Client
     std::string rtsp_url;
     XClientType client_type = kClientNone;
     std::unordered_map<std::string, ClientInfoPtr> client_infos_;   // 每个设备有多个信息，如摄像头有视频和音频2个设备信息
+    XmlQueryParamPtr param_ptr;
 };
 using ClientPtr = std::shared_ptr<Client>;
 

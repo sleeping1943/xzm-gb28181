@@ -294,17 +294,19 @@ int Handler::request_query_device_library(eXosip_t *sip_context, ClientPtr clien
     char str_to[512] = {0};
     auto s_info = Server::instance()->GetServerInfo();
     sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
-    sprintf(str_to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
+    sprintf(str_to, "sip:%s@%s:%d", client->real_device_id.c_str(), client->ip.c_str(), client->port);
     auto temp_ptr = std::make_shared<XmlQueryLibraryParam>();
 
     seconds end_secs = duration_cast<seconds>(system_clock::now().time_since_epoch());
     XmlQueryLibraryParamPtr params_ptr = std::make_shared<XmlQueryLibraryParam>();
-    params_ptr->device_id = client->device;
+    params_ptr->device_id = client->real_device_id;
     params_ptr->cmd = "RecordInfo";
     params_ptr->query_type = kXmlQueryFileLibrary;
-    params_ptr->start_time = end_secs.count() - 3600;
-    params_ptr->end_time = end_secs.count();
-    params_ptr->sn = ++sn_;
+    //params_ptr->start_time = end_secs.count() - 3600;
+    //params_ptr->end_time = end_secs.count();
+    params_ptr->start_time = "2023-09-18T00:00:00";
+    params_ptr->end_time = "2023-09-19T00:00:00";
+    params_ptr->sn = get_random_sn();
     std::string str_body = MsgBuilder::instance()->BuildMsg(params_ptr);
 
     osip_message_t *message = nullptr;
