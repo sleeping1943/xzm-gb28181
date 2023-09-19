@@ -50,8 +50,13 @@ public:
     bool Start();
     bool Stop();
     bool IsClientExist(const std::string& device);
-    bool IsClientAudioExist(const std::string& device);
+    bool IsClientInfoExist(const std::string& device);
     ClientPtr FindClient(const std::string& device);
+    /**
+     * @brief device可能是通道id,同时在通道中匹配
+     * 
+     */
+    ClientPtr FindClientEx(const std::string& device);
     bool AddClient(ClientPtr client);
     bool UpdateClientInfo(const std::string& device_id,
      std::unordered_map<std::string, ClientInfoPtr> client_infos);
@@ -59,6 +64,7 @@ public:
     void ClearClient();
     std::unordered_map<std::string, ClientPtr> GetClients();
     int AddRequest(const ClientRequestPtr req_ptr);
+    
 
 public:
     static HandlerPtr kDefaultHandler;

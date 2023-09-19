@@ -76,7 +76,7 @@ void Handler::response_message(eXosip_event_t *evtp, eXosip_t * sip_context_, in
         return;
     }
     if (!Server::instance()->IsClientExist(DeviceID)
-    && !Server::instance()->IsClientAudioExist(DeviceID)) {  // 服务器没有此客户端信息,也不是音频通道ID,断开连接
+    && !Server::instance()->IsClientInfoExist(DeviceID)) {  // 服务器没有此客户端信息,也不是音频通道ID,断开连接
         request_bye(evtp, sip_context_);
         return;
     }
@@ -137,7 +137,7 @@ int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
     CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
     sprintf(contact, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
-    sprintf(to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
+    sprintf(to, "sip:%s@%s:%d", client->real_device_id.c_str(), client->ip.c_str(), client->port);
     snprintf (sdp, 2048,
               "v=0\r\n"
               "o=%s 0 0 IN IP4 %s\r\n"
@@ -152,7 +152,7 @@ int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
               "a=setup:passive\r\n"
               "a=connection:new\r\n"
               "y=%s\r\n"
-              "f=\r\n", client->device.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
+              "f=\r\n", client->real_device_id.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
               //"y=0100000001\r\n"
               //"f=\r\n", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port);
 

@@ -117,17 +117,32 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
         rapidjson::Value d_port(rapidjson::kNumberType);
         rapidjson::Value d_ssrc(rapidjson::kStringType);
         rapidjson::Value d_rtsp_url(rapidjson::kStringType);
+        rapidjson::Value d_dev_type(rapidjson::kStringType);
+        std::string str_type = "未知";
+        switch (device->client_type) {
+            case kClientNVR:
+                str_type = "NVR设备";
+            break;
+            case kClientIPC:
+                str_type = "网络摄像头";
+            break;
+            default:
+                str_type = "未知";
+            break;
+        }
         d_name.SetString(device->device.c_str(), allocator);
         d_ip.SetString(device->ip.c_str(), allocator);
         d_port.SetInt(device->port);
         d_ssrc.SetString(device->ssrc.c_str(), allocator);
         d_rtsp_url.SetString(device->rtsp_url.c_str(), allocator);
+        d_dev_type.SetString(str_type.c_str(), allocator);
         //value.AddMember("name", device->device.c_str(), allocator);
         value.AddMember("name", d_name, allocator);
         value.AddMember("ip", d_ip, allocator);
         value.AddMember("port", d_port, allocator);
         value.AddMember("ssrc", d_ssrc, allocator);
         value.AddMember("rtsp", d_rtsp_url, allocator);
+        value.AddMember("type", d_dev_type, allocator);
         rapidjson::Value arr_client_info(rapidjson::kArrayType);
         for (const auto& obj : device->client_infos_) {
             auto client_info = obj.second;
@@ -217,12 +232,13 @@ int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)
     if (device.empty()) {
         return resp->String(get_simple_info(400, "can not find param device!"));
     }
-    auto client_ptr = Server::instance()->FindClient(device);
+    auto client_ptr = Server::instance()->FindClientEx(device);
     if (!client_ptr) {
         return resp->String(get_simple_info(101, "can not find the device client"));
     }
     auto req_ptr = std::make_shared<ClientRequest>();
     req_ptr->client_ptr = client_ptr;
+    client_ptr->real_device_id = device;
     auto s_info = Server::instance()->GetServerInfo();
     client_ptr->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);

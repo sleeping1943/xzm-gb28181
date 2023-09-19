@@ -85,7 +85,6 @@ bool RegisterHandler::register_client(eXosip_event_t *evtp, eXosip_t* sip_contex
             break;
         }
         client->client_type = kRegistedClientType.at(user_agent_type);
-        client->client_type = kClientIPC;
     } while (0);
     do {
         if (!check_ha1(evtp, auth)) {   // 鉴权没通过
@@ -94,10 +93,10 @@ bool RegisterHandler::register_client(eXosip_event_t *evtp, eXosip_t* sip_contex
             break;
         }
         this->response_message_answer(evtp, sip_context_, 200);
-        if (client->client_type != kClientIPC) {    // 只保存IP Camera类型客户端
+        if (client->client_type <= kClientNone && client->client_type >= kClientMax) {    // 只保存IP Camera,NVR类型客户端
             break;
         }
-        LOGI("IP Camera registration succee,ip=%s,port=%d,device=%s",client->ip.c_str(),client->port,client->device.c_str());
+        LOGI("IP Camera registration success,ip=%s,port=%d,device=%s,type:%d",client->ip.c_str(),client->port,client->device.c_str(), client->client_type);
         if (!Server::instance()->IsClientExist(client->device)) {   // 不存在该客户端
             Server::instance()->AddClient(client);
             this->request_device_query(sip_context_, client);

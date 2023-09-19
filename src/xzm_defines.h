@@ -298,7 +298,8 @@ struct Client
 
     std::string ip;
     unsigned short port = 0;
-    std::string device;
+    std::string device; // 设备本身ID
+    std::string real_device_id; // 实际操作id，如nvr播放沢是通道id
     bool is_reg = false;
     unsigned short rtp_port = 10000;
     std::string ssrc;   // 10进制
