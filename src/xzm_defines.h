@@ -18,6 +18,7 @@
 #include <queue>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
+#include <codecvt>
 
 namespace Xzm
 {
@@ -28,6 +29,12 @@ namespace Xzm
     {event, std::make_shared<handler>()}
 #define END_REGISTER_EVENT_HANDLER };
 
+#define BEGIN_REGISTER_MSG_RESPONSE(resps)  \
+    resps = {
+#define REGISTER_MSG_RESPONSE(msg, handler, ptr) \
+    {msg, std::bind(handler, ptr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
+#define END_REGISTER_MSG_RESPONSE()    \
+    };
 #define SIP_STRDUP(field) if (auth->field) (field) = osip_strdup_without_quote(auth->field)
 
 #define HV_JSON_GET_INT(json, to, key) HV_JSON_GET_VALUE(json, to, key, number_integer)
@@ -135,7 +142,8 @@ enum RequestType
     kRequestTypeCancelTalk, // 断开对讲请求
     kRequestTypeBroadcast,  // 对讲广播
     kRequestTypeScanDevice,     // 扫描设备信息
-    kRequestTypeQueryLibrary,  // 查询设备目录
+    kRequestTypeRefreshLibrary, // 刷新历史记录视频
+    kRequestTypeQueryLibrary,   // 查询设备目录
     kRequestTypeMax = 9999,
 
 };
@@ -219,6 +227,20 @@ public:
 
 };
 using XmlQueryLibraryInfoPtr = std::shared_ptr<XmlQueryLibraryInfo>;
+
+struct RecordInfo
+{
+    std::string parent_device_id;
+    std::string name;
+    std::string device_id;
+    std::string file_path;
+    std::string address;
+    std::string start_time;
+    std::string end_time;
+    int secrecy = 0;
+    std::string type;
+};
+using RecordInfoPtr = std::shared_ptr<RecordInfo>;
 
 /* sip服务器配置信息 */
 struct ServerInfo

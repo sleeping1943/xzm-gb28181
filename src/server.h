@@ -64,7 +64,10 @@ public:
     void ClearClient();
     std::unordered_map<std::string, ClientPtr> GetClients();
     int AddRequest(const ClientRequestPtr req_ptr);
-    
+    void AddRecordInfo(const std::string& parent_device_id, std::vector<RecordInfoPtr> records);
+    std::vector<RecordInfoPtr> GetRecordInfo(const std::string& parent_device_id);
+
+    FUNC_MSG_RESPONSE GetMsgResponse(const std::string& msg);
 
 public:
     static HandlerPtr kDefaultHandler;
@@ -100,8 +103,10 @@ private:
     std::thread thread_;
     std::unordered_map<eXosip_event_type, HandlerPtr> event_map_; // 注册的事件处理函数体
     std::unordered_map<std::string, ClientPtr> clients_;  // 已注册的客户端 <device_id, std::shared_ptr<Client>>
+    std::unordered_map<std::string, std::vector<RecordInfoPtr>> record_infos_;  // 缓存的历史录像记录 <device_id, std::vector<RecordInfoPtr>>
 
     B_Lock client_mutex_;
+    B_Lock record_mutex_;
 
     RequestQueue req_queue_;
     unsigned int max_request_num = 1000;

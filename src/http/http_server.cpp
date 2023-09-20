@@ -58,6 +58,9 @@ bool XHttpServer::Init(const std::string& conf_path)
     std::bind(&XHttpServer::scan_device_list, this, std::placeholders::_1, std::placeholders::_2));
     router.GET("/query_device_library",
     std::bind(&XHttpServer::query_device_library, this, std::placeholders::_1, std::placeholders::_2));
+    router.GET("/refresh_device_library",
+    std::bind(&XHttpServer::refresh_device_library, this, std::placeholders::_1, std::placeholders::_2));
+
     return true;
 }
 
@@ -214,6 +217,73 @@ int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
         return resp->String(get_simple_info(400, "错误的device_id"));
     }
     std::string start_time = req->GetParam("start_time");
+    std::string end_time = req->GetParam("end_time");
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(101, "can not find the device client"));
+    }
+    CLOGI(YELLOW, "start_time:%s end_time:%s", start_time.c_str(), end_time.c_str());
+
+    auto record_infos = Server::instance()->GetRecordInfo(device_id);
+    decltype(record_infos) valid_records;
+
+    rapidjson::Document doc(rapidjson::kObjectType);    // doc.SetObject();
+    rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+    
+    rapidjson::Value arr_record_info(rapidjson::kArrayType);
+    for (const auto& record_info : record_infos) {
+        if (!start_time.empty() && record_info->start_time.compare(start_time) < 0) {
+            break;
+        }
+        if (!end_time.empty() && record_info->end_time.compare(end_time) > 0) {
+            break;
+        }
+        valid_records.emplace_back(record_info);
+
+        rapidjson::Value value(rapidjson::kObjectType);
+        rapidjson::Value device_id(rapidjson::kStringType);
+        device_id.SetString(record_info->device_id.c_str(), allocator);
+        rapidjson::Value name(rapidjson::kStringType);
+        name.SetString(record_info->name.c_str(), allocator);
+        rapidjson::Value file_path(rapidjson::kStringType);
+        file_path.SetString(record_info->file_path.c_str(), allocator);
+        rapidjson::Value address(rapidjson::kStringType);
+        address.SetString(record_info->address.c_str(), allocator);
+        rapidjson::Value start_time(rapidjson::kStringType);
+        start_time.SetString(record_info->start_time.c_str(), allocator);
+        rapidjson::Value end_time(rapidjson::kStringType);
+        end_time.SetString(record_info->end_time.c_str(), allocator);
+        rapidjson::Value secrecy(rapidjson::kNumberType);
+        secrecy.SetInt(record_info->secrecy);
+        rapidjson::Value type(rapidjson::kStringType);
+        type.SetString(record_info->type.c_str(), allocator);
+
+        value.AddMember("device_id", device_id, allocator);
+        value.AddMember("name", name, allocator);
+        value.AddMember("file_path", file_path, allocator);
+        value.AddMember("address", address, allocator);
+        value.AddMember("start_time", start_time, allocator);
+        value.AddMember("end_time", end_time, allocator);
+        value.AddMember("secrecy", secrecy, allocator);
+        value.AddMember("type", type, allocator);
+        arr_record_info.PushBack(value, allocator);
+    }
+    doc.AddMember("record_list", arr_record_info, allocator);
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    auto record_list_str = buffer.GetString();
+
+    return resp->String(record_list_str);
+}
+
+int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "错误的device_id"));
+    }
+    std::string start_time = req->GetParam("start_time");
     if (start_time.empty()) {
         return resp->String(get_simple_info(400, "错误的start_time"));
     }
@@ -247,10 +317,10 @@ int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
     }
     client_ptr->real_device_id = device_id;
     req_ptr->client_ptr = client_ptr;
-    req_ptr->req_type = kRequestTypeQueryLibrary;
+    req_ptr->req_type = kRequestTypeRefreshLibrary;
     Server::instance()->AddRequest(req_ptr);
     resp->json["code"] = 0;
-    resp->json["data"]["action"] = "query_device_list";
+    resp->json["data"]["action"] = "refresh_device_list";
     resp->json["msg"] = "success";
     return kHttpOK;
 }

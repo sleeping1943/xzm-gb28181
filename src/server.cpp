@@ -1,4 +1,5 @@
 #include "server.h"
+#include "event_handler/handler.h"
 #include "include/rapidjson/document.h"
 #include "utils/json_helper.h"
 #include "utils/helper.h"
@@ -51,6 +52,13 @@ bool Server::Init(const std::string& conf_path)
         std::cerr << "json parse error!" << std::endl;
         return false;
     }
+
+    // 注册msg回调响应函数
+    BEGIN_REGISTER_MSG_RESPONSE(msg_response_)
+        REGISTER_MSG_RESPONSE("Catalog", &Handler::response_catalog, kDefaultHandler)
+        REGISTER_MSG_RESPONSE("RecordInfo", &Handler::response_recordinfo, kDefaultHandler)
+        REGISTER_MSG_RESPONSE("Keepalive", &Handler::response_keepalive, kDefaultHandler)
+    END_REGISTER_MSG_RESPONSE()
     return true;
 }
 
@@ -260,6 +268,31 @@ int Server::AddRequest(const ClientRequestPtr req_ptr)
     return 0;
 }
 
+void Server::AddRecordInfo(const std::string& parent_device_id, std::vector<RecordInfoPtr> records)
+{
+    WriteLock _lock(record_mutex_);
+    for (const auto& record_info : records) {
+        record_infos_[parent_device_id].emplace_back(record_info);
+    }
+}
+
+std::vector<RecordInfoPtr> Server::GetRecordInfo(const std::string& parent_device_id)
+{
+    if (record_infos_.count(parent_device_id) > 0) {
+        return record_infos_[parent_device_id];
+    }
+    return {};
+}
+
+FUNC_MSG_RESPONSE Server::GetMsgResponse(const std::string& msg)
+{
+    FUNC_MSG_RESPONSE func = nullptr;
+    if (msg_response_.count(msg) > 0) {
+        func = msg_response_[msg];
+    }
+    return func;
+}
+
 bool Server::run()
 {
     while (true) {
@@ -353,7 +386,10 @@ int Server::process_request()
         break;
         case kRequestTypeQueryLibrary:
             CLOGI(RED, "process request query library..................................");
-            kDefaultHandler->request_query_device_library(sip_context_, client_req->client_ptr);
+        break;
+        case kRequestTypeRefreshLibrary:
+            CLOGI(RED, "process request refresh library..................................");
+            kDefaultHandler->request_refresh_device_library(sip_context_, client_req->client_ptr);
         break;
         default:
         break;

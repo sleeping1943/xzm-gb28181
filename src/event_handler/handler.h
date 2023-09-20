@@ -15,10 +15,18 @@
 #include "eXosip2/eXosip.h"
 #include <memory>
 #include <random>
+#include <string>
+#include <unordered_map>
 #include "../xzm_defines.h"
+#include "boost/any.hpp"
 
 namespace Xzm
 {
+
+// sip message处理函数原型
+using FUNC_MSG_RESPONSE = std::function<void(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param)>;
+extern std::unordered_map<std::string, FUNC_MSG_RESPONSE> msg_response_;
+
 class Handler {
 public:
     Handler();
@@ -38,17 +46,28 @@ public:
     int request_invite(eXosip_t *sip_context, ClientPtr client);
     int request_invite_talk(eXosip_t *sip_context, ClientPtr client);
     int request_device_query(eXosip_t *sip_context, ClientPtr client);
-    int request_query_device_library(eXosip_t *sip_context, ClientPtr client);
+    /* 刷新历史记录缓存 */
+    int request_refresh_device_library(eXosip_t *sip_context, ClientPtr client);
     int request_broadcast(eXosip_t *sip_context, ClientPtr client);
     int parse_xml(const char *data, const char *s_mark, bool with_s_make,
         const char *e_mark, bool with_e_make, char *dest);
 
     int parse_device_xml(const std::string& xml_str);
-
+    /**
+     * @brief 解析历史录像记录
+     * 
+     * @param xml_str 
+     * @return int 
+     */
+    int parse_recordinfo_xml(const std::string& xml_str);
     void dump_request(eXosip_event_t *evtp);
     void dump_response(eXosip_event_t *evtp);
 
     int get_random_sn();
+
+    void response_catalog(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param);
+    void response_recordinfo(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param);
+    void response_keepalive(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param);
 
 private:
     std::atomic_bool is_print;

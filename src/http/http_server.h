@@ -50,13 +50,23 @@ private:
     int query_device_list(HttpRequest* req, HttpResponse* resp);
 
     /**
-     * @brief 查询设备目录信息
+     * @brief 查询设备历史记录信息
      * 
      * @param req 
      * @param resp 
      * @return int 
      */
     int query_device_library(HttpRequest* req, HttpResponse* resp);
+
+    /**
+     * @brief 刷新设备历史记录信息
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int refresh_device_library(HttpRequest* req, HttpResponse* resp);
+
 
     /**
      * @brief 请求指定设备开启推流

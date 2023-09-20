@@ -23,6 +23,8 @@ namespace Xzm {
 
 uint64_t Handler::sn_ = 10000;
 
+std::unordered_map<std::string, FUNC_MSG_RESPONSE> msg_response_;
+
 Handler::Handler()
 {
 
@@ -82,17 +84,23 @@ void Handler::response_message(eXosip_event_t *evtp, eXosip_t * sip_context_, in
     }
 
     LOGI("CmdType=%s,DeviceID=%s", CmdType,DeviceID);
-
-    if(!strcmp(CmdType, "Catalog")) {
-        this->parse_device_xml(body->body);
-        this->response_message_answer(evtp, sip_context_, 200);
-        // 需要根据对方的Catelog请求，做一些相应的应答请求
-    } else if(!strcmp(CmdType, "Keepalive")){   // 心跳消息
-        is_print = false;
-        this->response_message_answer(evtp, sip_context_, 200);
-    }else{
-        this->response_message_answer(evtp, sip_context_, 200);
+    auto func = Server::instance()->GetMsgResponse(CmdType);
+    std::shared_ptr<boost::any> param_ptr = std::make_shared<boost::any>();
+    if (func) {
+        func(evtp, sip_context_, 200, nullptr);
+    } else {
+        this->response_message_answer(evtp, sip_context_, 200); // 默认处理
     }
+    //if(!strcmp(CmdType, "Catalog")) {
+    //    this->parse_device_xml(body->body);
+    //    this->response_message_answer(evtp, sip_context_, 200);
+    //    // 需要根据对方的Catelog请求，做一些相应的应答请求
+    //} else if(!strcmp(CmdType, "Keepalive")){   // 心跳消息
+    //    is_print = false;
+    //    this->response_message_answer(evtp, sip_context_, 200);
+    //}else{
+    //    this->response_message_answer(evtp, sip_context_, 200);
+    //}
     return;
 }
 
@@ -115,6 +123,30 @@ void Handler::response_message_answer(eXosip_event_t *evtp, eXosip_t * sip_conte
         LOGE("code=%d,returnCode=%d,bRegister=%d",code,returnCode,bRegister);
     }
 
+}
+
+void Handler::response_catalog(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param)
+{
+    osip_body_t* body = nullptr;
+    osip_message_get_body(evtp->request, 0, &body);
+    parse_device_xml(body->body);
+    response_message_answer(evtp, sip_context_, 200);
+    return;
+}
+
+void Handler::response_recordinfo(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param)
+{
+    osip_body_t* body = nullptr;
+    osip_message_get_body(evtp->request, 0, &body);
+    parse_recordinfo_xml(body->body);
+    response_message_answer(evtp, sip_context_, 200);
+    return;
+}
+
+void Handler::response_keepalive(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param)
+{
+    is_print = false;
+    this->response_message_answer(evtp, sip_context_, 200);
 }
 
 int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
@@ -285,7 +317,7 @@ int Handler::request_device_query(eXosip_t *sip_context, ClientPtr client)
     return 0;
 }
 
-int Handler::request_query_device_library(eXosip_t *sip_context, ClientPtr client)
+int Handler::request_refresh_device_library(eXosip_t *sip_context, ClientPtr client)
 {
     if (!sip_context || !client) {
         return -1;
@@ -298,15 +330,6 @@ int Handler::request_query_device_library(eXosip_t *sip_context, ClientPtr clien
     auto temp_ptr = std::make_shared<XmlQueryLibraryParam>();
 
     auto params_ptr = client->param_ptr;
-    //seconds end_secs = duration_cast<seconds>(system_clock::now().time_since_epoch());
-    //XmlQueryLibraryParamPtr params_ptr = std::make_shared<XmlQueryLibraryParam>();
-    //params_ptr->device_id = client->real_device_id;
-    //params_ptr->cmd = "RecordInfo";
-    //params_ptr->query_type = kXmlQueryFileLibrary;
-    ////params_ptr->start_time = end_secs.count() - 3600;
-    ////params_ptr->end_time = end_secs.count();
-    //params_ptr->start_time = "2023-09-18T00:00:00";
-    //params_ptr->end_time = "2023-09-19T00:00:00";
     params_ptr->sn = get_random_sn();
     std::string str_body = MsgBuilder::instance()->BuildMsg(params_ptr);
 
@@ -494,6 +517,87 @@ int Handler::parse_device_xml(const std::string& xml_str)
         ss.str("");
     } while (node_device_item);
     Server::instance()->UpdateClientInfo(device_id, client_infos);
+    return 0;
+}
+
+/*
+<?xml version="1.0" encoding="gb2312"?>
+<Response>
+<CmdType>RecordInfo</CmdType>
+<SN>18975</SN>
+<DeviceID>34020000001320000005</DeviceID>
+<Name>��ƺ�����Ӫҵ��</Name>
+<SumNum>65</SumNum>
+<RecordList Num="1">
+<Item>
+<DeviceID>34020000001320000005</DeviceID>
+<Name>��ƺ�����Ӫҵ��</Name>
+<FilePath>1695136627_1695139429</FilePath>
+<Address>Address 1</Address>
+<StartTime>2023-09-19T23:17:07</StartTime>
+<EndTime>2023-09-19T23:59:59</EndTime>
+<Secrecy>0</Secrecy>
+<Type>time</Type>
+</Item>
+</RecordList>
+</Response>
+*/
+int Handler::parse_recordinfo_xml(const std::string& xml_str)
+{
+    //CLOGI(CYAN, "%s", xml_str.c_str());
+    XMLDocument doc;
+    auto ret = doc.Parse(xml_str.c_str());
+    if (ret != XMLError::XML_SUCCESS) {
+        LOGE("parse recordinfo xml error!");
+        return -1;
+    }
+    // 根元素
+    XMLElement *root = doc.RootElement();
+    // 指定名字的第一个子元素
+    XMLElement *node_device_id = root->FirstChildElement("DeviceID");
+    if (!node_device_id) {
+        LOGE("parse device_id error!");
+        return -2;
+    }
+    std::string parent_device_id = node_device_id->GetText();
+    XMLElement *node_record_list = root->FirstChildElement("RecordList");
+    if (!node_record_list) {
+        LOGE("parse record list error!");
+        return -3;
+    }
+    XMLElement *node_record_item = node_record_list->FirstChildElement("Item");
+    int index = 0;
+    std::string temp_str;
+    std::stringstream ss;
+    std::vector<RecordInfoPtr> record_infos;
+    XMLElement *temp_node = nullptr;
+    const char* temp_text = nullptr;
+    do {
+        RecordInfoPtr record_info = std::make_shared<RecordInfo>();
+        record_info->device_id = node_record_item->FirstChildElement("DeviceID")->GetText();
+        XML_GET_STRING(node_record_item, "Name", record_info->name, temp_node, temp_text);
+        XML_GET_STRING(node_record_item, "FilePath", record_info->file_path, temp_node, temp_text);
+        XML_GET_STRING(node_record_item, "Address", record_info->address, temp_node, temp_text);
+        XML_GET_STRING(node_record_item, "StartTime", record_info->start_time, temp_node, temp_text);
+        XML_GET_STRING(node_record_item, "end_time", record_info->end_time, temp_node, temp_text);
+        XML_GET_STRING(node_record_item, "Type", record_info->type, temp_node, temp_text);
+        XML_GET_INT(node_record_item, "Secrecy", record_info->secrecy, temp_node, temp_text);
+        record_infos.emplace_back(record_info);
+        node_record_item = node_record_item->NextSiblingElement("Item");
+        ss << "index[" << index++ << "]:" << std::endl
+        << "DeviceID    :" << record_info->device_id << std::endl
+        << "Name        :" << record_info->name << std::endl
+        << "FilePath:" << record_info->file_path << std::endl
+        << "Address     :" << record_info->address << std::endl
+        << "StartTime   :" << record_info->start_time << std::endl
+        << "EndTime     :" << record_info->end_time << std::endl
+        << "Secrecy     :" << record_info->secrecy << std::endl
+        << "Type        :" << record_info->type << std::endl;
+        CLOGI(RED, "%s", ss.str().c_str());
+        ss.str("");
+    } while (node_record_item);
+    Server::instance()->AddRecordInfo(parent_device_id, record_infos);
+    return 0;
     return 0;
 }
 
