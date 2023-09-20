@@ -374,7 +374,7 @@ int Server::process_request()
         break;
         case kRequestTypeInvite: // 建立会话请求
             CLOGI(RED, "process request send invite................................");
-            kDefaultHandler->request_invite(sip_context_, client_req->client_ptr);
+            kDefaultHandler->request_invite(sip_context_, client_req);
         break;
         case kRequestTypeMax:
         break;
@@ -382,24 +382,28 @@ int Server::process_request()
         break;
         case kRequestTypeTalk:  // 开启对话请求
             CLOGI(RED, "process request send invite................................");
-            kDefaultHandler->request_invite_talk(sip_context_, client_req->client_ptr);
+            kDefaultHandler->request_invite_talk(sip_context_, client_req);
         break;
         case kRequestTypeCancelTalk:
         break;
         case kRequestTypeBroadcast:
             CLOGI(RED, "process request broadcast..................................");
-            kDefaultHandler->request_broadcast(sip_context_, client_req->client_ptr);
+            kDefaultHandler->request_broadcast(sip_context_, client_req);
         break;
         case kRequestTypeScanDevice:
             CLOGI(RED, "process request scan device..................................");
-            kDefaultHandler->request_device_query(sip_context_, client_req->client_ptr);
+            kDefaultHandler->request_device_query(sip_context_, client_req);
         break;
         case kRequestTypeQueryLibrary:
             CLOGI(RED, "process request query library..................................");
         break;
         case kRequestTypeRefreshLibrary:
             CLOGI(RED, "process request refresh library..................................");
-            kDefaultHandler->request_refresh_device_library(sip_context_, client_req->client_ptr);
+            kDefaultHandler->request_refresh_device_library(sip_context_, client_req);
+        break;
+        case kRequestTypePlayback:
+            CLOGI(RED, "process request playback..................................");
+            kDefaultHandler->request_invite_playback(sip_context_, client_req);
         break;
         default:
         break;

@@ -99,7 +99,10 @@ bool RegisterHandler::register_client(eXosip_event_t *evtp, eXosip_t* sip_contex
         LOGI("IP Camera registration success,ip=%s,port=%d,device=%s,type:%d",client->ip.c_str(),client->port,client->device.c_str(), client->client_type);
         if (!Server::instance()->IsClientExist(client->device)) {   // 不存在该客户端
             Server::instance()->AddClient(client);
-            this->request_device_query(sip_context_, client);
+            ClientRequestPtr req_ptr = std::make_shared<ClientRequest>();
+            req_ptr->client_ptr = client;
+            req_ptr->req_type = kRequestTypeScanDevice;
+            this->request_device_query(sip_context_, req_ptr);
         }
         //request_invite(sip_context_, client);
     } while (0);

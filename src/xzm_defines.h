@@ -144,6 +144,7 @@ enum RequestType
     kRequestTypeScanDevice,     // 扫描设备信息
     kRequestTypeRefreshLibrary, // 刷新历史记录视频
     kRequestTypeQueryLibrary,   // 查询设备目录
+    kRequestTypePlayback,       // 历史录像回放
     kRequestTypeMax = 9999,
 
 };
@@ -280,6 +281,8 @@ struct HttpServerInfo
 {
     std::string ip;
     unsigned short port;
+    unsigned int work_threads;
+    unsigned int work_process;
 };
 
 struct ClientInfo
@@ -332,10 +335,29 @@ struct Client
 };
 using ClientPtr = std::shared_ptr<Client>;
 
+struct RequestParam
+{
+    RequestParam() {}
+    virtual ~RequestParam() {}
+};
+using RequestParamPtr = std::shared_ptr<RequestParam>;
+
+/* 查询历史录像参数 */
+struct RequestParamQueryHistory : public RequestParam
+{
+    RequestParamQueryHistory() {}
+    ~RequestParamQueryHistory() {}
+
+    int start_time = 0;
+    int end_time = 0;
+};
+using RequestParamQueryHistoryPtr = std::shared_ptr<RequestParamQueryHistory>;
+
 struct ClientRequest
 {
     ClientPtr client_ptr;
     RequestType req_type;
+    RequestParamPtr param_ptr;
 };
 using ClientRequestPtr = std::shared_ptr<ClientRequest>;
 using RequestQueue = std::queue<ClientRequestPtr>;

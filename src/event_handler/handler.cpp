@@ -1,6 +1,7 @@
 #include "handler.h"
 #include "../utils/log.h"
 #include <chrono>
+#include <memory>
 #include <osipparser2/osip_message.h>
 #include <osipparser2/osip_parser.h>
 #include <ostream>
@@ -149,7 +150,7 @@ void Handler::response_keepalive(eXosip_event_t *evtp, eXosip_t * sip_context_, 
     this->response_message_answer(evtp, sip_context_, 200);
 }
 
-int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
+int Handler::request_invite(eXosip_t *sip_context, ClientRequestPtr req)
 {
     char session_exp[1024] = { 0 };
     osip_message_t *msg = nullptr;
@@ -158,6 +159,7 @@ int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
     char contact[1024] = {0};
     char sdp[2048] = {0};
     char head[1024] = {0};
+    ClientPtr  client = req->client_ptr;
     /*
         在http请求推流时就确定rtsp推流地址
     */
@@ -210,7 +212,7 @@ int Handler::request_invite(eXosip_t *sip_context, ClientPtr client)
     return ret;
 }
 
-int Handler::request_invite_talk(eXosip_t *sip_context, ClientPtr client)
+int Handler::request_invite_talk(eXosip_t *sip_context, ClientRequestPtr req)
 {
     char session_exp[1024] = { 0 };
     osip_message_t *msg = nullptr;
@@ -219,6 +221,7 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientPtr client)
     char contact[1024] = {0};
     char sdp[2048] = {0};
     char head[1024] = {0};
+    ClientPtr client = req->client_ptr;
 
     auto s_info = Server::instance()->GetServerInfo();
     client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
@@ -286,8 +289,9 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientPtr client)
     return ret;
 }
 
-int Handler::request_device_query(eXosip_t *sip_context, ClientPtr client)
+int Handler::request_device_query(eXosip_t *sip_context, ClientRequestPtr req)
 {
+    ClientPtr client = req->client_ptr;
     if (!sip_context || !client) {
         return -1;
     }
@@ -317,8 +321,9 @@ int Handler::request_device_query(eXosip_t *sip_context, ClientPtr client)
     return 0;
 }
 
-int Handler::request_refresh_device_library(eXosip_t *sip_context, ClientPtr client)
+int Handler::request_refresh_device_library(eXosip_t *sip_context, ClientRequestPtr req)
 {
+    ClientPtr client = req->client_ptr;
     if (!sip_context || !client) {
         return -1;
     }
@@ -344,8 +349,79 @@ int Handler::request_refresh_device_library(eXosip_t *sip_context, ClientPtr cli
     return 0;
 }
 
-int Handler::request_broadcast(eXosip_t *sip_context, ClientPtr client)
+int Handler::request_invite_playback(eXosip_t *sip_context, ClientRequestPtr req)
 {
+    char session_exp[1024] = { 0 };
+    osip_message_t *msg = nullptr;
+    char from[1024] = {0};
+    char to[1024] = {0};
+    char contact[1024] = {0};
+    char sdp[2048] = {0};
+    char head[1024] = {0};
+    char start_time[32] = {0};
+    char end_time[32] = {0};
+    RequestParamQueryHistoryPtr param_ptr = std::dynamic_pointer_cast<RequestParamQueryHistory>(req->param_ptr);
+    if (param_ptr == nullptr) {
+        CLOGE(RED, "param_ptr cast nullptr!");
+        return -1;
+    }
+    ClientPtr client = req->client_ptr;
+    auto s_info = Server::instance()->GetServerInfo();
+
+    CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
+    sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
+    sprintf(contact, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
+    sprintf(to, "sip:%s@%s:%d", client->real_device_id.c_str(), client->ip.c_str(), client->port);
+    snprintf (sdp, 2048,
+              "v=0\r\n"
+              "o=%s 0 0 IN IP4 %s\r\n"
+              "s=Playback\r\n"
+              "u=%s:0\r\n"
+              "c=IN IP4 %s\r\n"
+              "t=%d %d\r\n"
+              "m=video %d TCP/RTP/AVP 96 98 97\r\n"
+              "a=recvonly\r\n"
+              "a=rtpmap:96 PS/90000\r\n"
+              "a=rtpmap:98 H264/90000\r\n"
+              "a=rtpmap:97 MPEG4/90000\r\n"
+              "a=downloadspeed:1\r\n"
+              "a=setup:passive\r\n"
+              "a=connection:new\r\n"
+              "y=%s\r\n"
+              "f=\r\n"
+              , client->real_device_id.c_str()
+              , s_info.rtp_ip.c_str()
+              , client->real_device_id.c_str()
+              , s_info.rtp_ip.c_str()
+              , param_ptr->start_time
+              , param_ptr->end_time
+              , s_info.rtp_port
+              , client->ssrc.c_str());
+    int ret = eXosip_call_build_initial_invite(sip_context, &msg, to, from,  nullptr, nullptr);
+    if (ret) {
+        LOGE( "eXosip_call_build_initial_invite error: %s %s ret:%d", from, to, ret);
+        return -1;
+    }
+
+    osip_message_set_body(msg, sdp, strlen(sdp));
+    osip_message_set_content_type(msg, "application/sdp");
+    snprintf(session_exp, sizeof(session_exp)-1, "%i;refresher=uac", s_info.timeout);
+    osip_message_set_header(msg, "Session-Expires", session_exp);
+    osip_message_set_supported(msg, "timer");
+
+    int call_id = eXosip_call_send_initial_invite(sip_context, msg);
+
+    if (call_id > 0) {
+        LOGI("eXosip_call_send_initial_invite success: call_id=%d",call_id);
+    }else{
+        LOGE("eXosip_call_send_initial_invite error: call_id=%d",call_id);
+    }
+    return ret;
+}
+
+int Handler::request_broadcast(eXosip_t *sip_context, ClientRequestPtr req)
+{
+    ClientPtr client = req->client_ptr;
     if (!sip_context || !client) {
         LOGE("request_broadcast error, sip_context or client is nullptr!");
         return -1;

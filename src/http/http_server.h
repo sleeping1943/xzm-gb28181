@@ -114,6 +114,16 @@ private:
     int start_talk_broadcast(HttpRequest* req, HttpResponse* resp);
 
     /**
+     * @brief 历史录像回放
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int start_playback(HttpRequest* req, HttpResponse* resp);
+    
+    /************************以下接口为zlmediakit回调函数****************************/
+    /**
      * @brief 国标设备开始推送的回调及鉴权函数
      * 
      * @param req 

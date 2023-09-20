@@ -1,7 +1,9 @@
 {
     "http_config":{
         "ip":"10.23.132.27",
-        "port":18080
+        "port":18080,
+        "work_threads": 0,
+        "work_process" : 0
     },
     "sip_config":{
         "ua_comment":"user agent",

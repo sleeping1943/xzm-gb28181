@@ -43,12 +43,14 @@ public:
     int request_bye(eXosip_event_t *evtp, eXosip_t *sip_context_);
     void response_message(eXosip_event_t *evtp, eXosip_t * sip_context_, int code);
     void response_message_answer(eXosip_event_t *evtp, eXosip_t * sip_context_, int code);
-    int request_invite(eXosip_t *sip_context, ClientPtr client);
-    int request_invite_talk(eXosip_t *sip_context, ClientPtr client);
-    int request_device_query(eXosip_t *sip_context, ClientPtr client);
+    int request_invite(eXosip_t *sip_context, ClientRequestPtr req);
+    int request_invite_talk(eXosip_t *sip_context, ClientRequestPtr req);
+    int request_device_query(eXosip_t *sip_context, ClientRequestPtr req);
     /* 刷新历史记录缓存 */
-    int request_refresh_device_library(eXosip_t *sip_context, ClientPtr client);
-    int request_broadcast(eXosip_t *sip_context, ClientPtr client);
+    int request_refresh_device_library(eXosip_t *sip_context, ClientRequestPtr req);
+    /* 历史录像回放 */
+    int request_invite_playback(eXosip_t *sip_context, ClientRequestPtr req);
+    int request_broadcast(eXosip_t *sip_context, ClientRequestPtr req);
     int parse_xml(const char *data, const char *s_mark, bool with_s_make,
         const char *e_mark, bool with_e_make, char *dest);
 

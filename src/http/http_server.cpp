@@ -3,10 +3,12 @@
 #include "../utils/json_helper.h"
 #include "../utils/helper.h"
 #include "../utils/log.h"
+#include <chrono>
 #include <functional>
 #include <hv/HttpServer.h>
 #include <mutex>
 #include <ostream>
+#include <thread>
 #include "../server.h"
 #include "../utils/time.h"
 
@@ -36,9 +38,13 @@ bool XHttpServer::Init(const std::string& conf_path)
     auto& http_config = doc["http_config"];
     JSON_VALUE_REQUIRE_STRING(http_config, "ip", s_info_.ip);
     JSON_VALUE_REQUIRE_INT(http_config, "port", s_info_.port);
+    JSON_VALUE_REQUIRE_INT(http_config, "work_threads", s_info_.work_threads);
+    JSON_VALUE_REQUIRE_INT(http_config, "work_process", s_info_.work_process);
 
     server_.service = &router;
     server_.port = s_info_.port;
+    server_.worker_processes = s_info_.work_process;
+    server_.worker_threads = s_info_.work_threads;
 
     router.GET("/query_device",
      std::bind(&XHttpServer::query_device_list, this, std::placeholders::_1, std::placeholders::_2));
@@ -60,7 +66,14 @@ bool XHttpServer::Init(const std::string& conf_path)
     std::bind(&XHttpServer::query_device_library, this, std::placeholders::_1, std::placeholders::_2));
     router.GET("/refresh_device_library",
     std::bind(&XHttpServer::refresh_device_library, this, std::placeholders::_1, std::placeholders::_2));
+    router.GET("/start_playback",
+    std::bind(&XHttpServer::start_playback, this, std::placeholders::_1, std::placeholders::_2));
 
+    std::stringstream ss;
+    ss << "http.worker_processes    :" << server_.worker_processes << std::endl
+       << "http.worker_connectons   :" << server_.worker_connections << std::endl
+       << "http.worker_threads      :" << server_.worker_threads;
+    CLOGI(YELLOW, "\n%s\n", ss.str().c_str());
     return true;
 }
 
@@ -274,6 +287,7 @@ int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
     doc.Accept(writer);
     auto record_list_str = buffer.GetString();
 
+    //std::this_thread::sleep_for(std::chrono::seconds(10));  // sleep 10s
     return resp->String(record_list_str);
 }
 
@@ -318,6 +332,7 @@ int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
     client_ptr->real_device_id = device_id;
     req_ptr->client_ptr = client_ptr;
     req_ptr->req_type = kRequestTypeRefreshLibrary;
+
     Server::instance()->RemoveRecordInfo(device_id);
     Server::instance()->AddRequest(req_ptr);
     resp->json["code"] = 0;
@@ -420,6 +435,50 @@ int XHttpServer::start_talk_broadcast(HttpRequest* req, HttpResponse* resp)
     resp->json["data"]["action"] = "broadcast";
     resp->json["msg"] = "success";
 
+    return kHttpOK;
+}
+
+int XHttpServer::start_playback(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "can not find param device!"));
+    }
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(400, "can not find the device client"));
+    }
+    std::string start_time = req->GetParam("start_time");
+    if (start_time.empty()) {
+        return resp->String(get_simple_info(400, "start_time can not be null!"));
+    }
+    std::string end_time = req->GetParam("end_time");
+    if (end_time.empty()) {
+        return resp->String(get_simple_info(400, "end_time can not be null!"));
+    }
+    auto req_ptr = std::make_shared<ClientRequest>();
+    client_ptr->real_device_id = device_id;
+    req_ptr->client_ptr = client_ptr;
+    req_ptr->req_type = kRequestTypePlayback;
+    auto param_ptr = std::make_shared<RequestParamQueryHistory>();
+    req_ptr->param_ptr = param_ptr;
+    try {
+        param_ptr->start_time = std::stoi(start_time);
+        param_ptr->end_time = std::stoi(end_time);
+    } catch (std::exception& e) {
+        CLOGE(RED, "%s", e.what());
+        return resp->String(get_simple_info(400, e.what()));
+    }
+    auto s_info = Server::instance()->GetServerInfo();
+    client_ptr->ssrc = Xzm::util::build_ssrc(false, s_info.realm);
+    auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);
+    client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
+    Server::instance()->AddRequest(req_ptr);
+    resp->json["code"] = 0; // 鉴权成功
+    resp->json["data"]["device"] = device_id;
+    resp->json["data"]["action"] = "playback";
+    resp->json["data"]["rtsp"] = client_ptr->rtsp_url;
+    resp->json["msg"] = "success";
     return kHttpOK;
 }
 
