@@ -66,6 +66,7 @@ public:
     int AddRequest(const ClientRequestPtr req_ptr);
     void AddRecordInfo(const std::string& parent_device_id, std::vector<RecordInfoPtr> records);
     std::vector<RecordInfoPtr> GetRecordInfo(const std::string& parent_device_id);
+    void RemoveRecordInfo(const std::string& parent_device_id);
 
     FUNC_MSG_RESPONSE GetMsgResponse(const std::string& msg);
 

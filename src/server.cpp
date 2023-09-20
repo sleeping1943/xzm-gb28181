@@ -278,10 +278,20 @@ void Server::AddRecordInfo(const std::string& parent_device_id, std::vector<Reco
 
 std::vector<RecordInfoPtr> Server::GetRecordInfo(const std::string& parent_device_id)
 {
+    ReadLock _lock(record_mutex_);
     if (record_infos_.count(parent_device_id) > 0) {
         return record_infos_[parent_device_id];
     }
     return {};
+}
+
+void Server::RemoveRecordInfo(const std::string& parent_device_id)
+{
+    WriteLock _lock(record_mutex_);
+    if (record_infos_.count(parent_device_id) > 0) {
+        record_infos_.erase(parent_device_id);
+    }
+    return;
 }
 
 FUNC_MSG_RESPONSE Server::GetMsgResponse(const std::string& msg)

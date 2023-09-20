@@ -318,6 +318,7 @@ int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
     client_ptr->real_device_id = device_id;
     req_ptr->client_ptr = client_ptr;
     req_ptr->req_type = kRequestTypeRefreshLibrary;
+    Server::instance()->RemoveRecordInfo(device_id);
     Server::instance()->AddRequest(req_ptr);
     resp->json["code"] = 0;
     resp->json["data"]["action"] = "refresh_device_list";
