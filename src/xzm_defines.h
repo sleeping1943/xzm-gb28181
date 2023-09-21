@@ -23,12 +23,14 @@
 namespace Xzm
 {
 
+/* 国标信令注册 */
 #define BEGIN_REGISTER_EVENT_HANDLER    \
     event_map_ = std::unordered_map<eXosip_event_type, HandlerPtr>{
 #define REGISTER_EVENT_HANDLER(event, handler)  \
     {event, std::make_shared<handler>()}
 #define END_REGISTER_EVENT_HANDLER };
 
+/* 国标消息处理函数定义 */
 #define BEGIN_REGISTER_MSG_RESPONSE(resps)  \
     resps = {
 #define REGISTER_MSG_RESPONSE(msg, handler, ptr) \
@@ -37,13 +39,23 @@ namespace Xzm
     };
 #define SIP_STRDUP(field) if (auth->field) (field) = osip_strdup_without_quote(auth->field)
 
+/* libhv的json解析 */
 #define HV_JSON_GET_INT(json, to, key) HV_JSON_GET_VALUE(json, to, key, number_integer)
 #define HV_JSON_GET_STRING(json, to, key) HV_JSON_GET_VALUE(json, to, key, string)
 #define HV_JSON_GET_VALUE(json, to, key, type) auto iter_##to = json.find(key); \
     if (iter_##to->is_##type()) { \
         to = iter_##to.value(); \
     }
+/* libhv逻辑处理函数注册 */
+#define BEGIN_HV_REGISTER_HANDLER()   {
+#define HV_REGISTER_SYNC_HANDLER(router, type, path, class, func, obj_ptr)    \
+        router.type(path, std::bind(&class::func, obj_ptr, std::placeholders::_1, std::placeholders::_2));
 
+#define HV_REGISTER_ASYNC_HANDLER(router, type, path, class, func, obj_ptr)    \
+        router.type(path, std::bind(&class::func, obj_ptr, std::placeholders::_1));
+#define END_HV_REGISTER_HANDLER() };
+
+/* xml解析 */
 #define XML_GET_STRING(node, name, value, temp_node, temp_text) \
     {   \
         temp_node = node->FirstChildElement(name);    \
@@ -65,11 +77,15 @@ namespace Xzm
             }   \
         }   \
     }
+
+using DeviceID = std::string;
+
 /* 读写锁定义 */
 typedef boost::shared_mutex B_Lock;
 typedef boost::unique_lock<B_Lock> WriteLock;
 typedef boost::shared_lock<B_Lock> ReadLock;
 
+/* http状态码 */
 enum HttpCode
 {
     kHttpContinue = 100,                            // 继续。客户端应继续其请求
@@ -240,6 +256,8 @@ struct RecordInfo
     std::string end_time;
     int secrecy = 0;
     std::string type;
+    bool is_last_item = false;
+    int current_num = 0;    // 当前是第几个记录
 };
 using RecordInfoPtr = std::shared_ptr<RecordInfo>;
 

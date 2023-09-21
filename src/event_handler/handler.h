@@ -61,7 +61,7 @@ public:
      * @param xml_str 
      * @return int 
      */
-    int parse_recordinfo_xml(const std::string& xml_str);
+    int parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item);
     void dump_request(eXosip_event_t *evtp);
     void dump_response(eXosip_event_t *evtp);
 
@@ -74,6 +74,7 @@ public:
 private:
     std::atomic_bool is_print;
     static uint64_t sn_;   // 命令序列号
+    std::map<DeviceID, std::atomic_int> history_video_cache_;   // <device_id, 当前解析出的历史录像个数>
 };
 using HandlerPtr = std::shared_ptr<Handler>;
 };

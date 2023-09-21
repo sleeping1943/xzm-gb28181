@@ -21,3 +21,5 @@ get {{url}}/start_talk_broadcast?device_id=34020000002000001001
 
 ### 播放鉴权
 #post {{url}}/on_play
+
+get {{url}}/refresh_device_library_async?device_id=34020000001320000005&start_time=2023-09-18 00:00:00&end_time=2023-09-19 23:59:59

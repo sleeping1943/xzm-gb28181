@@ -15,6 +15,7 @@
 using tinyxml2::XMLDocument;
 using tinyxml2::XMLError;
 using tinyxml2::XMLElement;
+using tinyxml2::XMLAttribute;
 
 using std::chrono::seconds;
 using std::chrono::duration_cast;
@@ -139,7 +140,13 @@ void Handler::response_recordinfo(eXosip_event_t *evtp, eXosip_t * sip_context_,
 {
     osip_body_t* body = nullptr;
     osip_message_get_body(evtp->request, 0, &body);
-    parse_recordinfo_xml(body->body);
+    bool is_last_item = false;
+    parse_recordinfo_xml(body->body, is_last_item);
+    if (is_last_item) { // 该设备历史录像获取完毕
+        // 通知获取完成,返回前端录像信息
+        Server::instance()->NotifyHistoryComplete();
+        CLOGE(RED, "query history completed!!Notify histtory complete!");
+    }
     response_message_answer(evtp, sip_context_, 200);
     return;
 }
@@ -344,6 +351,7 @@ int Handler::request_refresh_device_library(eXosip_t *sip_context, ClientRequest
     osip_message_set_content_type(message, "Application/MANSCDP+xml");
     eXosip_lock(sip_context);
     int ret = eXosip_message_send_request(sip_context, message);
+    history_video_cache_[client->real_device_id] = 0;
     CLOGI(RED, "send query device library ret:%d", ret);
     eXosip_unlock(sip_context);
     return 0;
@@ -618,7 +626,7 @@ int Handler::parse_device_xml(const std::string& xml_str)
 </RecordList>
 </Response>
 */
-int Handler::parse_recordinfo_xml(const std::string& xml_str)
+int Handler::parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item)
 {
     //CLOGI(CYAN, "%s", xml_str.c_str());
     XMLDocument doc;
@@ -636,11 +644,26 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str)
         return -2;
     }
     std::string parent_device_id = node_device_id->GetText();
+    // 指定名字的第一个子元素
+    XMLElement *node_item_count = root->FirstChildElement("SumNum");
+    if (!node_item_count) {
+        LOGE("parse device_id error!");
+        return -2;
+    }
+    std::string str_item_count = node_item_count->GetText();
+    if (str_item_count.empty()) {
+        str_item_count = "0";
+    }
+    int item_count = std::stoi(str_item_count);
     XMLElement *node_record_list = root->FirstChildElement("RecordList");
     if (!node_record_list) {
         LOGE("parse record list error!");
         return -3;
     }
+    const XMLAttribute* attr = node_record_list->FindAttribute("Num");
+    int item_num = attr->Int64Value();   // 本次xml有多少个记录
+    
+
     XMLElement *node_record_item = node_record_list->FirstChildElement("Item");
     int index = 0;
     std::string temp_str;
@@ -650,6 +673,7 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str)
     const char* temp_text = nullptr;
     do {
         RecordInfoPtr record_info = std::make_shared<RecordInfo>();
+        record_info->current_num = item_num;
         record_info->device_id = node_record_item->FirstChildElement("DeviceID")->GetText();
         XML_GET_STRING(node_record_item, "Name", record_info->name, temp_node, temp_text);
         XML_GET_STRING(node_record_item, "FilePath", record_info->file_path, temp_node, temp_text);
@@ -661,6 +685,8 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str)
         record_infos.emplace_back(record_info);
         node_record_item = node_record_item->NextSiblingElement("Item");
         ss << "index[" << index++ << "]:" << std::endl
+        << "current_num :" << item_num << std::endl
+        << "item_count  :" << item_count << std::endl
         << "DeviceID    :" << record_info->device_id << std::endl
         << "Name        :" << record_info->name << std::endl
         << "FilePath:" << record_info->file_path << std::endl
@@ -673,7 +699,10 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str)
         ss.str("");
     } while (node_record_item);
     Server::instance()->AddRecordInfo(parent_device_id, record_infos);
-    return 0;
+    history_video_cache_[parent_device_id] += item_num;   // 视频的device_id和parane_device_id相同
+    if (history_video_cache_[parent_device_id] >= item_count) {
+        is_last_item = true;
+    }
     return 0;
 }
 

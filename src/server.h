@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include "event_handler/handler.h"
 #include <boost/thread/shared_mutex.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
 extern "C" {
 #include <eXosip2/eXosip.h>
@@ -70,6 +71,12 @@ public:
 
     FUNC_MSG_RESPONSE GetMsgResponse(const std::string& msg);
 
+    /* 等待历史录像查询完成 */
+    void WaitHistory();
+
+    /* 历史录像查询完成通知 */
+    void NotifyHistoryComplete();
+
 public:
     static HandlerPtr kDefaultHandler;
 
@@ -112,5 +119,6 @@ private:
     RequestQueue req_queue_;
     unsigned int max_request_num = 1000;
     std::mutex req_mutex_;
+    boost::interprocess::interprocess_semaphore history_semaphore_;
 };
 };

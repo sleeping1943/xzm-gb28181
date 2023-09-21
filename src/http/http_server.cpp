@@ -11,6 +11,7 @@
 #include <thread>
 #include "../server.h"
 #include "../utils/time.h"
+#include "hv/hasync.h"
 
 namespace Xzm
 {
@@ -46,28 +47,36 @@ bool XHttpServer::Init(const std::string& conf_path)
     server_.worker_processes = s_info_.work_process;
     server_.worker_threads = s_info_.work_threads;
 
-    router.GET("/query_device",
-     std::bind(&XHttpServer::query_device_list, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/start_rtsp_publish",
-     std::bind(&XHttpServer::start_rtsp_publish, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/stop_rtsp_publish",
-     std::bind(&XHttpServer::stop_rtsp_publish, this, std::placeholders::_1, std::placeholders::_2));
-    router.POST("/on_publish",
-    std::bind(&XHttpServer::on_publish, this, std::placeholders::_1, std::placeholders::_2));
-    router.POST("/on_play",
-    std::bind(&XHttpServer::on_play, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/start_invite_talk",
-    std::bind(&XHttpServer::start_invite_talk, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/start_talk_broadcast",
-    std::bind(&XHttpServer::start_talk_broadcast, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/scan_device_list",
-    std::bind(&XHttpServer::scan_device_list, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/query_device_library",
-    std::bind(&XHttpServer::query_device_library, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/refresh_device_library",
-    std::bind(&XHttpServer::refresh_device_library, this, std::placeholders::_1, std::placeholders::_2));
-    router.GET("/start_playback",
-    std::bind(&XHttpServer::start_playback, this, std::placeholders::_1, std::placeholders::_2));
+
+    BEGIN_HV_REGISTER_HANDLER()
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/query_device", XHttpServer, query_device_list, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/start_rtsp_publish", XHttpServer, start_rtsp_publish, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/stop_rtsp_publish", XHttpServer, stop_rtsp_publish, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/start_invite_talk", XHttpServer, start_invite_talk, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/start_talk_broadcast", XHttpServer, start_talk_broadcast, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/scan_device_list", XHttpServer, scan_device_list, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/query_device_library", XHttpServer, query_device_library, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/refresh_device_library", XHttpServer, refresh_device_library, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/start_playback", XHttpServer, start_playback, this);
+        HV_REGISTER_SYNC_HANDLER(router, POST, "/on_publish", XHttpServer, on_publish, this);
+        HV_REGISTER_SYNC_HANDLER(router, POST, "/on_play", XHttpServer, on_play, this);
+        //HV_REGISTER_ASYNC_HANDLER(router, GET, "/refresh_device_library_async", XHttpServer, refresh_device_library_async, this);
+
+        //router.POST("/refresh_device_library_async", std::bind(&XHttpServer::refresh_device_library_async, this, std::placeholders::_1));
+        //router.POST("/11", std::bind(&XHttpServer::refresh_device_library_async, this, std::placeholders::_1));
+        router.GET("/refresh_device_library_async", [this] (const HttpContextPtr& context) {
+            std::string history_record_infos;
+            if (refresh_record_history__(context->request.get(), context->response.get()) < 0) {
+                return context->response->String("refresh record history error!");
+            }
+            hv::async([context, history_record_infos, this] () {
+                Server::instance()->WaitHistory();
+                std::string history_video_list = query_device_library__(context->request.get(), context->response.get());
+                context->send(history_video_list, context->type());
+            });
+            return 0;
+        });
+    END_HV_REGISTER_HANDLER()
 
     std::stringstream ss;
     ss << "http.worker_processes    :" << server_.worker_processes << std::endl
@@ -225,15 +234,20 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
 
 int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
 {
+    return resp->String(query_device_library__(req, resp));
+}
+
+std::string XHttpServer::query_device_library__(HttpRequest* req, HttpResponse* resp)
+{
     std::string device_id = req->GetParam("device_id");
     if (device_id.empty()) {
-        return resp->String(get_simple_info(400, "错误的device_id"));
+        return get_simple_info(400, "错误的device_id");
     }
     std::string start_time = req->GetParam("start_time");
     std::string end_time = req->GetParam("end_time");
     auto client_ptr = Server::instance()->FindClientEx(device_id);
     if (!client_ptr) {
-        return resp->String(get_simple_info(101, "can not find the device client"));
+        return get_simple_info(101, "can not find the device client");
     }
     CLOGI(YELLOW, "start_time:%s end_time:%s", start_time.c_str(), end_time.c_str());
 
@@ -286,28 +300,26 @@ int XHttpServer::query_device_library(HttpRequest* req, HttpResponse* resp)
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
     auto record_list_str = buffer.GetString();
-
-    //std::this_thread::sleep_for(std::chrono::seconds(10));  // sleep 10s
-    return resp->String(record_list_str);
+    return record_list_str;
 }
 
-int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
+int XHttpServer::refresh_record_history__(HttpRequest* req, HttpResponse* resp)
 {
     std::string device_id = req->GetParam("device_id");
     if (device_id.empty()) {
-        return resp->String(get_simple_info(400, "错误的device_id"));
+        return -1;
     }
     std::string start_time = req->GetParam("start_time");
     if (start_time.empty()) {
-        return resp->String(get_simple_info(400, "错误的start_time"));
+        return -2;
     }
     std::string end_time = req->GetParam("end_time");
     if (end_time.empty()) {
-        return resp->String(get_simple_info(400, "错误的end_time"));
+        return -3;
     }
     auto client_ptr = Server::instance()->FindClientEx(device_id);
     if (!client_ptr) {
-        return resp->String(get_simple_info(101, "can not find the device client"));
+        return -4;
     }
     CLOGI(YELLOW, "start_time:%s end_time:%s", start_time.c_str(), end_time.c_str());
     auto req_ptr = std::make_shared<ClientRequest>();
@@ -335,10 +347,30 @@ int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
 
     Server::instance()->RemoveRecordInfo(device_id);
     Server::instance()->AddRequest(req_ptr);
-    resp->json["code"] = 0;
+    return 0;
+}
+
+int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
+{
+    int ret = refresh_record_history__(req, resp);
+    resp->json["code"] = ret;
     resp->json["data"]["action"] = "refresh_device_list";
-    resp->json["msg"] = "success";
+    resp->json["msg"] = (ret < 0 ? "failed" : "success");
     return kHttpOK;
+}
+
+int XHttpServer::refresh_device_library_async(const HttpContextPtr& context)
+{
+    std::string history_record_infos;
+    if (refresh_record_history__(context->request.get(), context->response.get()) < 0) {
+        return context->response->String("refresh record history error!");
+    }
+    hv::async([context, history_record_infos] () {
+        Server::instance()->WaitHistory();
+        std::string device_id = context->request->GetParam("device_id");
+        context->send(history_record_infos, context->type());
+    });
+    return 0;
 }
 
 int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)

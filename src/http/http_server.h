@@ -12,6 +12,7 @@
 #include "../xzm_defines.h"
 #include "../utils/singleton.h"
 #include "hv/HttpServer.h"
+#include <hv/HttpContext.h>
 #include <thread>
 #include <atomic>
 
@@ -58,6 +59,9 @@ private:
      */
     int query_device_library(HttpRequest* req, HttpResponse* resp);
 
+    std::string query_device_library__(HttpRequest* req, HttpResponse* resp);
+
+    int refresh_record_history__(HttpRequest* req, HttpResponse* resp);
     /**
      * @brief 刷新设备历史记录信息
      * 
@@ -67,6 +71,8 @@ private:
      */
     int refresh_device_library(HttpRequest* req, HttpResponse* resp);
 
+    /* 异步处理设备历史录像信息的查询 */
+    int refresh_device_library_async(const HttpContextPtr& context);
 
     /**
      * @brief 请求指定设备开启推流

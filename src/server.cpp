@@ -27,7 +27,7 @@ HandlerPtr Server::kDefaultHandler = std::make_shared<Handler>();
 std::atomic_bool Server::is_server_quit(false);
 std::atomic_bool Server::is_client_all_quit(false);
 
-Server::Server():is_quit_(false)
+Server::Server():is_quit_(false), history_semaphore_(0)
 {
 
 }
@@ -301,6 +301,16 @@ FUNC_MSG_RESPONSE Server::GetMsgResponse(const std::string& msg)
         func = msg_response_[msg];
     }
     return func;
+}
+
+void Server::WaitHistory()
+{
+    history_semaphore_.wait();
+}
+
+void Server::NotifyHistoryComplete()
+{
+    history_semaphore_.post();
 }
 
 bool Server::run()
