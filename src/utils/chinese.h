@@ -12,23 +12,20 @@
 #include <codecvt>
 #include <string>
 #include "singleton.h"
+#include <iconv.h>
+#include <vector>
+#include <string.h>
 
 namespace Xzm {
 namespace util {
 class Chinese : public Singleton<Chinese>
 {
 public:
-	static std::string Utf8ToAnsi(const std::string& str);
-	static std::string AnsiToUtf8(const std::string& str);
-
-
+    std::string GBKToUTF8(const std::string& strGBK);
+    std::string UTFtoGBK(const char* utf8);
 private:
-	static std::string UnicodeToUtf8(const std::wstring& wstr);
-	static std::wstring Utf8ToUnicode(const std::string& str);
-	static std::string UnicodeToAnsi(const std::wstring& wstr);
-	static std::wstring AnsiToUnicode(const std::string& str);
-
-private:
-
+    int code_convert(const char *from_charset, const char *to_charset, char *inbuf, size_t inlen, char *outbuf, size_t outlen);
+    int u2g(char *inbuf, size_t inlen, char *outbuf, size_t outlen);
+    int g2u(char *inbuf, size_t inlen, char *outbuf, size_t outlen);
 };
 }};

@@ -598,7 +598,7 @@ int Handler::parse_device_xml(const std::string& xml_str)
         } else {
             client_info->channel_type = kChannelNone;
         }
-        client_info->name = Xzm::util::Chinese::AnsiToUtf8(client_info->name);
+        client_info->name = Xzm::util::Chinese::instance()->GBKToUTF8(client_info->name);
         client_infos[client_info->device_id] = client_info;
         node_device_item = node_device_item->NextSiblingElement("Item");
         ss << "index[" << index++ << "]:" << std::endl
@@ -699,6 +699,7 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item
         XML_GET_STRING(node_record_item, "end_time", record_info->end_time, temp_node, temp_text);
         XML_GET_STRING(node_record_item, "Type", record_info->type, temp_node, temp_text);
         XML_GET_INT(node_record_item, "Secrecy", record_info->secrecy, temp_node, temp_text);
+        record_info->name = Xzm::util::Chinese::instance()->GBKToUTF8(record_info->name);
         record_infos.emplace_back(record_info);
         node_record_item = node_record_item->NextSiblingElement("Item");
         ss << "index[" << index++ << "]:" << std::endl

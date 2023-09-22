@@ -74,6 +74,19 @@ ctrl+c,程序接收信号退出执行而不是直接暴力退出
 
 * 项目使用xmake作为构建工具,使用debug.sh/release.sh也会自动使用xmake生成CMakeLists.txt和makefile
 
+## 测试
+~~本项目使用googletest进行单元测试,版本为v1.14,默认googletest安装于/usr/local目录下~~
+本项目使用googletest进行单元测试,版本为v1.10,默认googletest安装于/usr/local目录下,使用1.14会报错,说低于C++14的版本不支持
+
+* 列出所有测试用例
+  ```
+  ./test-gb28181 --gtest_list_tests
+  ```
+
+* 运行指定测试用例
+```
+  ./test-gb28181 --gtest_filter="TestEncode.ReadFile"
+```
 
 ## 特别感谢
     此项目参考https://gitee.com/Vanishi/BXC_SipServer
