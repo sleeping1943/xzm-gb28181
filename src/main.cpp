@@ -19,6 +19,7 @@ void quit_server(int)
 
 int main(int argc, char** argv)
 {
+    setlocale(LC_CTYPE, "");    // 使ansi编码有效,用于utf8和ansi转码,但是所有lib都回收影响,有风险
     signal(SIGINT, quit_server);
     Xzm::Server::instance()->Test();
     std::string content;

@@ -12,6 +12,7 @@
 #include "../utils/tinyxml2.h"
 #include "../msg_builder/msg_builder.h"
 #include <algorithm>
+#include "../utils/chinese.h"
 
 using tinyxml2::XMLDocument;
 using tinyxml2::XMLError;
@@ -597,6 +598,7 @@ int Handler::parse_device_xml(const std::string& xml_str)
         } else {
             client_info->channel_type = kChannelNone;
         }
+        client_info->name = Xzm::util::Chinese::AnsiToUtf8(client_info->name);
         client_infos[client_info->device_id] = client_info;
         node_device_item = node_device_item->NextSiblingElement("Item");
         ss << "index[" << index++ << "]:" << std::endl
