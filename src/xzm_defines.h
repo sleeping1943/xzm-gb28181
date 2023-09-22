@@ -85,6 +85,15 @@ typedef boost::shared_mutex B_Lock;
 typedef boost::unique_lock<B_Lock> WriteLock;
 typedef boost::shared_lock<B_Lock> ReadLock;
 
+enum ChannelType
+{
+    kChannelNone = 0,
+    kChannelVideo,  // 视频通道
+    kChannelAudio,  // 音频通道
+    kChannelAlarm,  // 告警通道
+    kChannelMax,
+};
+
 /* http状态码 */
 enum HttpCode
 {
@@ -318,6 +327,7 @@ struct ClientInfo
     int safety_way = 0;
     int secrecy = 0;
     int status = 1;
+    ChannelType channel_type;
 };
 using ClientInfoPtr = std::shared_ptr<ClientInfo>;
 

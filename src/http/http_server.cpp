@@ -172,6 +172,9 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
         rapidjson::Value arr_client_info(rapidjson::kArrayType);
         for (const auto& obj : device->client_infos_) {
             auto client_info = obj.second;
+            if (client_info->channel_type != kChannelVideo) {   // 暂只返回视频通道
+                continue;
+            }
             rapidjson::Value value(rapidjson::kObjectType);
             rapidjson::Value device_id(rapidjson::kStringType);
             rapidjson::Value name(rapidjson::kStringType);

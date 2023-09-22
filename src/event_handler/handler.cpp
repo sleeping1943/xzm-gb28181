@@ -11,6 +11,7 @@
 #include "../utils/helper.h"
 #include "../utils/tinyxml2.h"
 #include "../msg_builder/msg_builder.h"
+#include <algorithm>
 
 using tinyxml2::XMLDocument;
 using tinyxml2::XMLError;
@@ -581,6 +582,20 @@ int Handler::parse_device_xml(const std::string& xml_str)
             if (temp_text) {
                 client_info->status = (strcmp(temp_text, "ON") == 0) ? 1 : 0;
             }
+        }
+        std::string str_client_type = client_info->model;
+        std::transform(str_client_type.begin(), str_client_type.end(), str_client_type.begin()
+        , [] (unsigned char c) {
+                return std::tolower(c);
+            });
+        if (str_client_type.find("camera") != std::string::npos) {
+            client_info->channel_type = kChannelVideo;
+        } else if (str_client_type.find("audio") != std::string::npos) {
+            client_info->channel_type = kChannelAudio;
+        } else if (str_client_type.find("alarm") != std::string::npos) {
+            client_info->channel_type = kChannelAlarm;
+        } else {
+            client_info->channel_type = kChannelNone;
         }
         client_infos[client_info->device_id] = client_info;
         node_device_item = node_device_item->NextSiblingElement("Item");
