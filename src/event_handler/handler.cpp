@@ -264,12 +264,11 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientRequestPtr req)
               "s=Play\r\n"
               "c=IN IP4 %s\r\n"
               "t=0 0\r\n"
-              "m=audio %d TCP/RTP/AVP 8 96\r\n"
+              "m=audio %d RTP/AVP 8\r\n"
               "a=recvonly\r\n"  // SIP服务器收取音频数据
               "a=rtpmap:8 PCMA/8000\r\n"
-              "a=rtpmap:96 PS/90000\r\n"
-              "a=setup:passive\r\n" // TCP被动模式
-              "a=connection:new\r\n"    // 每次新建连接
+              //"a=setup:passive\r\n" // TCP被动模式
+              //"a=connection:new\r\n"    // 每次新建连接
               "y=%s\r\n"
               "f=v/////a/1/8/1\r\n", client->device.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
               //"y=0100000001\r\n"
