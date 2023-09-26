@@ -722,84 +722,91 @@ int Handler::parse_device_xml(const std::string& xml_str)
 */
 int Handler::parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item)
 {
-    //CLOGI(CYAN, "%s", xml_str.c_str());
-    XMLDocument doc;
-    auto ret = doc.Parse(xml_str.c_str());
-    if (ret != XMLError::XML_SUCCESS) {
-        LOGE("parse recordinfo xml error!");
-        return -1;
-    }
-    // 根元素
-    XMLElement *root = doc.RootElement();
-    // 指定名字的第一个子元素
-    XMLElement *node_device_id = root->FirstChildElement("DeviceID");
-    if (!node_device_id) {
-        LOGE("parse device_id error!");
-        return -2;
-    }
-    std::string parent_device_id = node_device_id->GetText();
-    // 指定名字的第一个子元素
-    XMLElement *node_item_count = root->FirstChildElement("SumNum");
-    if (!node_item_count) {
-        LOGE("parse device_id error!");
-        return -2;
-    }
-    std::string str_item_count = node_item_count->GetText();
-    if (str_item_count.empty()) {
-        str_item_count = "0";
-    }
-    int item_count = std::stoi(str_item_count);
-    XMLElement *node_record_list = root->FirstChildElement("RecordList");
-    if (!node_record_list) {
-        LOGE("parse record list error!");
-        return -3;
-    }
-    const XMLAttribute* attr = node_record_list->FindAttribute("Num");
-    int item_num = attr->Int64Value();   // 本次xml有多少个记录
-    
-
-    XMLElement *node_record_item = node_record_list->FirstChildElement("Item");
-    int index = 0;
-    std::string temp_str;
-    std::stringstream ss;
-    std::vector<RecordInfoPtr> record_infos;
-    XMLElement *temp_node = nullptr;
-    const char* temp_text = nullptr;
     do {
-        RecordInfoPtr record_info = std::make_shared<RecordInfo>();
-        record_info->current_num = item_num;
-        record_info->device_id = node_record_item->FirstChildElement("DeviceID")->GetText();
-        XML_GET_STRING(node_record_item, "Name", record_info->name, temp_node, temp_text);
-        XML_GET_STRING(node_record_item, "FilePath", record_info->file_path, temp_node, temp_text);
-        XML_GET_STRING(node_record_item, "Address", record_info->address, temp_node, temp_text);
-        XML_GET_STRING(node_record_item, "StartTime", record_info->start_time, temp_node, temp_text);
-        XML_GET_STRING(node_record_item, "end_time", record_info->end_time, temp_node, temp_text);
-        XML_GET_STRING(node_record_item, "Type", record_info->type, temp_node, temp_text);
-        XML_GET_INT(node_record_item, "Secrecy", record_info->secrecy, temp_node, temp_text);
-        record_info->name = Xzm::util::Chinese::instance()->GBKToUTF8(record_info->name);
-        record_infos.emplace_back(record_info);
-        node_record_item = node_record_item->NextSiblingElement("Item");
-        ss << "index[" << index++ << "]:" << std::endl
-        << "item_num :" << item_num << std::endl
-        << "current_num :" << history_video_cache_[parent_device_id] << std::endl
-        << "item_count  :" << item_count << std::endl
-        << "DeviceID    :" << record_info->device_id << std::endl
-        << "Name        :" << record_info->name << std::endl
-        << "FilePath:" << record_info->file_path << std::endl
-        << "Address     :" << record_info->address << std::endl
-        << "StartTime   :" << record_info->start_time << std::endl
-        << "EndTime     :" << record_info->end_time << std::endl
-        << "Secrecy     :" << record_info->secrecy << std::endl
-        << "Type        :" << record_info->type << std::endl;
-        CLOGI(RED, "%s", ss.str().c_str());
-        ss.str("");
-    } while (node_record_item);
-    Server::instance()->AddRecordInfo(parent_device_id, record_infos);
-    history_video_cache_[parent_device_id] += item_num;   // 视频的device_id和parane_device_id相同
-    if (history_video_cache_[parent_device_id] >= item_count) {
-        is_last_item = true;
-    }
-    return 0;
+        //CLOGI(CYAN, "%s", xml_str.c_str());
+        XMLDocument doc;
+        auto ret = doc.Parse(xml_str.c_str());
+        if (ret != XMLError::XML_SUCCESS) {
+            LOGE("parse recordinfo xml error!");
+            break;
+        }
+        // 根元素
+        XMLElement *root = doc.RootElement();
+        // 指定名字的第一个子元素
+        XMLElement *node_device_id = root->FirstChildElement("DeviceID");
+        if (!node_device_id) {
+            LOGE("parse device_id error!");
+            break;
+        }
+        std::string parent_device_id = node_device_id->GetText();
+        // 指定名字的第一个子元素
+        XMLElement *node_item_count = root->FirstChildElement("SumNum");
+        if (!node_item_count) {
+            LOGE("parse device_id error!");
+            break;
+        }
+        std::string str_item_count = node_item_count->GetText();
+        if (str_item_count.empty()) {
+            str_item_count = "0";
+        }
+        int item_count = std::stoi(str_item_count);
+        if (item_count <= 0) {  // 有些设备不存储历史录像
+            break;
+        }
+        XMLElement *node_record_list = root->FirstChildElement("RecordList");
+        if (!node_record_list) {
+            LOGE("parse record list error!");
+            break;
+        }
+        const XMLAttribute* attr = node_record_list->FindAttribute("Num");
+        int item_num = attr->Int64Value();   // 本次xml有多少个记录
+        
+
+        XMLElement *node_record_item = node_record_list->FirstChildElement("Item");
+        int index = 0;
+        std::string temp_str;
+        std::stringstream ss;
+        std::vector<RecordInfoPtr> record_infos;
+        XMLElement *temp_node = nullptr;
+        const char* temp_text = nullptr;
+        do {
+            RecordInfoPtr record_info = std::make_shared<RecordInfo>();
+            record_info->current_num = item_num;
+            record_info->device_id = node_record_item->FirstChildElement("DeviceID")->GetText();
+            XML_GET_STRING(node_record_item, "Name", record_info->name, temp_node, temp_text);
+            XML_GET_STRING(node_record_item, "FilePath", record_info->file_path, temp_node, temp_text);
+            XML_GET_STRING(node_record_item, "Address", record_info->address, temp_node, temp_text);
+            XML_GET_STRING(node_record_item, "StartTime", record_info->start_time, temp_node, temp_text);
+            XML_GET_STRING(node_record_item, "end_time", record_info->end_time, temp_node, temp_text);
+            XML_GET_STRING(node_record_item, "Type", record_info->type, temp_node, temp_text);
+            XML_GET_INT(node_record_item, "Secrecy", record_info->secrecy, temp_node, temp_text);
+            record_info->name = Xzm::util::Chinese::instance()->GBKToUTF8(record_info->name);
+            record_infos.emplace_back(record_info);
+            node_record_item = node_record_item->NextSiblingElement("Item");
+            ss << "index[" << index++ << "]:" << std::endl
+            << "item_num :" << item_num << std::endl
+            << "current_num :" << history_video_cache_[parent_device_id] << std::endl
+            << "item_count  :" << item_count << std::endl
+            << "DeviceID    :" << record_info->device_id << std::endl
+            << "Name        :" << record_info->name << std::endl
+            << "FilePath:" << record_info->file_path << std::endl
+            << "Address     :" << record_info->address << std::endl
+            << "StartTime   :" << record_info->start_time << std::endl
+            << "EndTime     :" << record_info->end_time << std::endl
+            << "Secrecy     :" << record_info->secrecy << std::endl
+            << "Type        :" << record_info->type << std::endl;
+            CLOGI(RED, "%s", ss.str().c_str());
+            ss.str("");
+        } while (node_record_item);
+        Server::instance()->AddRecordInfo(parent_device_id, record_infos);
+        history_video_cache_[parent_device_id] += item_num;   // 视频的device_id和parane_device_id相同
+        if (history_video_cache_[parent_device_id] >= item_count) {
+            is_last_item = true;
+        }
+        return 0;
+    } while (0);
+    is_last_item = true;
+    return -1;
 }
 
 void Handler::dump_request(eXosip_event_t *evtp)
