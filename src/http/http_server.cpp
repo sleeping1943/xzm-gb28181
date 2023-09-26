@@ -524,13 +524,13 @@ int XHttpServer::fast_forward_playback(HttpRequest* req, HttpResponse* resp)
     if (device_id.empty()) {
         return resp->String(get_simple_info(400, "can not find param device_id!"));
     }
-    std::string call_id = req->GetParam("call_id");
-    if (call_id.empty()) {
-        return resp->String(get_simple_info(400, "can not find param call_id!"));
+    std::string ssrc = req->GetParam("ssrc");
+    if (ssrc.empty()) {
+        return resp->String(get_simple_info(400, "can not find param ssrc!"));
     }
-    std::string dialog_id = req->GetParam("dialog_id");
-    if (dialog_id.empty()) {
-        return resp->String(get_simple_info(400, "can not find param dialog_id!"));
+    std::string scale = req->GetParam("scale");
+    if (scale.empty()) {
+        return resp->String(get_simple_info(400, "can not find param scale!"));
     }
     auto client_ptr = Server::instance()->FindClientEx(device_id);
     if (!client_ptr) {
@@ -541,8 +541,8 @@ int XHttpServer::fast_forward_playback(HttpRequest* req, HttpResponse* resp)
     req_ptr->client_ptr = client_ptr;
     req_ptr->req_type = kRequestTypeFastforwardPlayback;
     auto param_ptr = std::make_shared<RequestParamFastforward>();
-    param_ptr->call_id = call_id;
-    param_ptr->dialog_id = dialog_id;
+    param_ptr->ssrc = ssrc;
+    param_ptr->scale = scale;
     req_ptr->param_ptr = param_ptr;
     Server::instance()->AddRequest(req_ptr);
     resp->json["code"] = 0; // 鉴权成功

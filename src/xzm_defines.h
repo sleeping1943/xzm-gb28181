@@ -388,8 +388,8 @@ struct RequestParamFastforward : public RequestParam
     RequestParamFastforward() {}
     ~RequestParamFastforward() {}
 
-    std::string call_id;
-    std::string dialog_id;
+    std::string scale;
+    std::string ssrc;
 };
 using RequestParamFastforwardPtr = std::shared_ptr<RequestParamFastforward>;
 

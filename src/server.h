@@ -77,6 +77,10 @@ public:
     /* 历史录像查询完成通知 */
     void NotifyHistoryComplete();
 
+    void AddPlacybackInfo(const std::string& ssrc, int did);
+    void RemovePlaybackInfo(const std::string& ssrc);
+    int GetPlaybackId(const std::string& ssrc);
+
 public:
     static HandlerPtr kDefaultHandler;
 
@@ -120,5 +124,8 @@ private:
     unsigned int max_request_num = 1000;
     std::mutex req_mutex_;
     boost::interprocess::interprocess_semaphore history_semaphore_;
+    
+    B_Lock playback_mutex_;
+    std::map<std::string, int> playback_infos_; // <ssrc, dialog_id>
 };
 };

@@ -484,6 +484,17 @@ int Handler::request_fast_forward(eXosip_t *sip_context, ClientRequestPtr req)
     char body_info[1024] = {0};
     ClientPtr  client = req->client_ptr;
     auto s_info = Server::instance()->GetServerInfo();
+
+    auto param_ptr = std::dynamic_pointer_cast<RequestParamFastforward>(req->param_ptr);
+    if (!param_ptr) {
+        CLOGE(RED, "param_ptr is null pointer!!");
+        return -1;
+    }
+    int did = Server::instance()->GetPlaybackId(param_ptr->ssrc);
+    if (did < 0) {
+        CLOGE(RED, "can not find correct did!");
+        return -1;
+    }
     
     CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
@@ -492,14 +503,8 @@ int Handler::request_fast_forward(eXosip_t *sip_context, ClientRequestPtr req)
     snprintf (body_info, 1024,
               "PLAY MANSTRSP/1.0\r\n"
               "CSeq:%d\r\n"
-              "Scale:%f\r\n"
-              "\r\n", 3, 4.000000);
-    auto param_ptr = std::dynamic_pointer_cast<RequestParamFastforward>(req->param_ptr);
-    if (!param_ptr) {
-        CLOGE(RED, "param_ptr is null pointer!!");
-        return -1;
-    }
-    int did = std::stoi(param_ptr->dialog_id);
+              "Scale:%s\r\n"
+              "\r\n", 3, param_ptr->scale.c_str());
     CLOGI(RED, "request fast forward,did:%d", did);
     int ret = eXosip_call_build_info(sip_context, did, &msg);
     //int ret = eXosip_call_build_request(sip_context, did, "INFO", &msg);

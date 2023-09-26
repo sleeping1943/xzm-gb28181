@@ -314,6 +314,27 @@ void Server::NotifyHistoryComplete()
     history_semaphore_.post();
 }
 
+void Server::AddPlacybackInfo(const std::string& ssrc, int did)
+{
+    WriteLock _lock(playback_mutex_);
+    playback_infos_[ssrc] = did;
+}
+
+void Server::RemovePlaybackInfo(const std::string& ssrc)
+{
+    WriteLock _lock(playback_mutex_);
+    playback_infos_.erase(ssrc);
+}
+
+int Server::GetPlaybackId(const std::string& ssrc)
+{
+    ReadLock _lock(playback_mutex_);
+    if (playback_infos_.count(ssrc) > 0) {
+        return playback_infos_[ssrc];
+    }
+    return -1;
+}
+
 bool Server::run()
 {
     while (true) {
