@@ -51,6 +51,12 @@ public:
     /* 历史录像回放 */
     int request_invite_playback(eXosip_t *sip_context, ClientRequestPtr req);
     int request_broadcast(eXosip_t *sip_context, ClientRequestPtr req);
+    /* 历史录像快进 */
+    int request_fast_forward(eXosip_t *sip_context, ClientRequestPtr req);
+    /* 历史录像快退 */
+    int request_rewind(eXosip_t *sip_context, ClientRequestPtr req);
+    /* 历史录像暂停 */
+    int request_pasue(eXosip_t *sip_context, ClientRequestPtr req);
     int parse_xml(const char *data, const char *s_mark, bool with_s_make,
         const char *e_mark, bool with_e_make, char *dest);
 

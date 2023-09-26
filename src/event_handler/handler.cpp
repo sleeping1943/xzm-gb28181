@@ -474,6 +474,79 @@ int Handler::request_broadcast(eXosip_t *sip_context, ClientRequestPtr req)
     return 0;
 }
 
+int Handler::request_fast_forward(eXosip_t *sip_context, ClientRequestPtr req)
+{
+    char session_exp[1024] = { 0 };
+    osip_message_t *msg = nullptr;
+    char from[1024] = {0};
+    char to[1024] = {0};
+    char contact[1024] = {0};
+    char body_info[1024] = {0};
+    ClientPtr  client = req->client_ptr;
+    auto s_info = Server::instance()->GetServerInfo();
+    
+    CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
+    sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
+    sprintf(contact, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
+    sprintf(to, "sip:%s@%s:%d", client->real_device_id.c_str(), client->ip.c_str(), client->port);
+    snprintf (body_info, 1024,
+              "PLAY MANSTRSP/1.0\r\n"
+              "CSeq:%d\r\n"
+              "Scale:%f\r\n"
+              "\r\n", 3, 4.000000);
+    auto param_ptr = std::dynamic_pointer_cast<RequestParamFastforward>(req->param_ptr);
+    if (!param_ptr) {
+        CLOGE(RED, "param_ptr is null pointer!!");
+        return -1;
+    }
+    int did = std::stoi(param_ptr->dialog_id);
+    CLOGI(RED, "request fast forward,did:%d", did);
+    int ret = eXosip_call_build_info(sip_context, did, &msg);
+    //int ret = eXosip_call_build_request(sip_context, did, "INFO", &msg);
+    if (ret) {
+        LOGE( "eXosip_call_build_request error: %s %s ret:%d", from, to, ret);
+        return -1;
+    }
+    osip_message_set_body(msg, body_info, strlen(body_info));
+    osip_message_set_content_type(msg, "Application/MANSRTSP");
+    snprintf(session_exp, sizeof(session_exp)-1, "%i;refresher=uac", s_info.timeout);
+    int call_ret = eXosip_call_send_request(sip_context, did, msg);
+    if (call_ret > 0) {
+        LOGI("eXosip_message_send_request success: call_ret=%d",call_ret);
+    }else{
+        LOGE("eXosip_message_send_request error: call_ret=%d",call_ret);
+    }
+    #if 0
+    int ret = eXosip_message_build_request(sip_context, &msg, "INFO", to, from, nullptr);
+    if (ret) {
+        LOGE( "eXosip_message_build_request error: %s %s ret:%d", from, to, ret);
+        return -1;
+    }
+    
+    osip_message_set_call_id(msg, param_ptr->call_id.c_str());
+    osip_message_set_body(msg, body_info, strlen(body_info));
+    osip_message_set_content_type(msg, "Application/MANSRTSP");
+    snprintf(session_exp, sizeof(session_exp)-1, "%i;refresher=uac", s_info.timeout);
+    int call_ret = eXosip_message_send_request(sip_context, msg);
+    if (call_ret > 0) {
+        LOGI("eXosip_message_send_request success: call_ret=%d",call_ret);
+    }else{
+        LOGE("eXosip_message_send_request error: call_ret=%d",call_ret);
+    }
+    #endif
+    return ret;
+}
+
+int Handler::request_rewind(eXosip_t *sip_context, ClientRequestPtr req)
+{
+    return 0;
+}
+
+int Handler::request_pasue(eXosip_t *sip_context, ClientRequestPtr req)
+{
+    return 0;
+}
+
 int Handler::parse_xml(const char *data, const char *s_mark, bool with_s_make, const char *e_mark, bool with_e_make, char *dest)
 {
     const char* satrt = strstr( data, s_mark );
@@ -702,7 +775,8 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item
         record_infos.emplace_back(record_info);
         node_record_item = node_record_item->NextSiblingElement("Item");
         ss << "index[" << index++ << "]:" << std::endl
-        << "current_num :" << item_num << std::endl
+        << "item_num :" << item_num << std::endl
+        << "current_num :" << history_video_cache_[parent_device_id] << std::endl
         << "item_count  :" << item_count << std::endl
         << "DeviceID    :" << record_info->device_id << std::endl
         << "Name        :" << record_info->name << std::endl

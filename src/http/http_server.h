@@ -127,7 +127,16 @@ private:
      * @return int 
      */
     int start_playback(HttpRequest* req, HttpResponse* resp);
-    
+
+    /**
+     * @brief 快进历史录像
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int fast_forward_playback(HttpRequest* req, HttpResponse* resp);
+
     /************************以下接口为zlmediakit回调函数****************************/
     /**
      * @brief 国标设备开始推送的回调及鉴权函数

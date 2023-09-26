@@ -170,6 +170,7 @@ enum RequestType
     kRequestTypeRefreshLibrary, // 刷新历史记录视频
     kRequestTypeQueryLibrary,   // 查询设备目录
     kRequestTypePlayback,       // 历史录像回放
+    kRequestTypeFastforwardPlayback,    // 快进历史录像
     kRequestTypeMax = 9999,
 
 };
@@ -380,6 +381,17 @@ struct RequestParamQueryHistory : public RequestParam
     int end_time = 0;
 };
 using RequestParamQueryHistoryPtr = std::shared_ptr<RequestParamQueryHistory>;
+
+/* 快进历史录像参数 */
+struct RequestParamFastforward : public RequestParam
+{
+    RequestParamFastforward() {}
+    ~RequestParamFastforward() {}
+
+    std::string call_id;
+    std::string dialog_id;
+};
+using RequestParamFastforwardPtr = std::shared_ptr<RequestParamFastforward>;
 
 struct ClientRequest
 {

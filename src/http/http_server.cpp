@@ -58,6 +58,7 @@ bool XHttpServer::Init(const std::string& conf_path)
         HV_REGISTER_SYNC_HANDLER(router, GET, "/query_device_library", XHttpServer, query_device_library, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/refresh_device_library", XHttpServer, refresh_device_library, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/start_playback", XHttpServer, start_playback, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/fast_forward_playback", XHttpServer, fast_forward_playback, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_publish", XHttpServer, on_publish, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_play", XHttpServer, on_play, this);
         //HV_REGISTER_ASYNC_HANDLER(router, GET, "/refresh_device_library_async", XHttpServer, refresh_device_library_async, this);
@@ -513,6 +514,40 @@ int XHttpServer::start_playback(HttpRequest* req, HttpResponse* resp)
     resp->json["data"]["device"] = device_id;
     resp->json["data"]["action"] = "playback";
     resp->json["data"]["rtsp"] = client_ptr->rtsp_url;
+    resp->json["msg"] = "success";
+    return kHttpOK;
+}
+
+int XHttpServer::fast_forward_playback(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "can not find param device_id!"));
+    }
+    std::string call_id = req->GetParam("call_id");
+    if (call_id.empty()) {
+        return resp->String(get_simple_info(400, "can not find param call_id!"));
+    }
+    std::string dialog_id = req->GetParam("dialog_id");
+    if (dialog_id.empty()) {
+        return resp->String(get_simple_info(400, "can not find param dialog_id!"));
+    }
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(400, "can not find the device client"));
+    }
+    auto req_ptr = std::make_shared<ClientRequest>();
+    client_ptr->real_device_id = device_id;
+    req_ptr->client_ptr = client_ptr;
+    req_ptr->req_type = kRequestTypeFastforwardPlayback;
+    auto param_ptr = std::make_shared<RequestParamFastforward>();
+    param_ptr->call_id = call_id;
+    param_ptr->dialog_id = dialog_id;
+    req_ptr->param_ptr = param_ptr;
+    Server::instance()->AddRequest(req_ptr);
+    resp->json["code"] = 0; // 鉴权成功
+    resp->json["data"]["device"] = device_id;
+    resp->json["data"]["action"] = "fast_forward_playback";
     resp->json["msg"] = "success";
     return kHttpOK;
 }
