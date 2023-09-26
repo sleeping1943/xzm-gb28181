@@ -72,6 +72,7 @@ bool XHttpServer::Init(const std::string& conf_path)
             }
             hv::async([context, history_record_infos, this] () {
                 Server::instance()->WaitHistory();
+                //std::this_thread::sleep_for(std::chrono::seconds(10));
                 std::string history_video_list = query_device_library__(context->request.get(), context->response.get());
                 context->send(history_video_list, context->type());
             });

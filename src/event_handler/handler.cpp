@@ -732,6 +732,11 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item
         }
         // 根元素
         XMLElement *root = doc.RootElement();
+        std::string root_name = root->Name();
+        if (root_name != "Response") {  // 只解析响应报文
+            LOGE("parse response error!");
+            return -1;
+        }
         // 指定名字的第一个子元素
         XMLElement *node_device_id = root->FirstChildElement("DeviceID");
         if (!node_device_id) {
