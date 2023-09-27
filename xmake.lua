@@ -24,7 +24,8 @@ target("gb28181-server")
         "osip2", 
         "osipparser2",
         "eXosip2",
-        "boost_thread"
+        "boost_thread",
+        "boost_filesystem"
     )
 
     add_syslinks(

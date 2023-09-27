@@ -3,6 +3,7 @@
 
 #include "../utils/chinese.h"
 #include "../utils/helper.h"
+#include "../utils/timer.h"
 #include <exception>
 #include <gtest/internal/gtest-port.h>
 
@@ -34,6 +35,12 @@ bool GBK2UTF8(const std::string& file_path)
     return true;
 }
 
+void GetCurrentTime()
+{
+    std::string str_now = Xzm::util::Timer::instance()->GetCurrentTime();
+    std::cout << "-------------------" << str_now << "------------------------" << std::endl;
+}
+
 TEST(TestEncode, ReadFile)
 {
     ASSERT_NO_THROW(ReadFile(file_path));
@@ -44,10 +51,15 @@ TEST(TestEncode, convert)
     ASSERT_EQ(GBK2UTF8(file_path), true);
 }
 
+TEST(TestTimer, now)
+{
+    ASSERT_NO_THROW(GetCurrentTime());
+}
+
 int main(int argc, char** argv)
 {
     setlocale(LC_CTYPE, "zh-CN");    // 使ansi编码有效,用于utf8和ansi转码,但是所有lib都回收影响,有风险
     testing::InitGoogleTest(&argc, argv);
-    //return RUN_ALL_TESTS();
-    GBK2UTF8(file_path);
+    return RUN_ALL_TESTS();
+    //GBK2UTF8(file_path);
 }

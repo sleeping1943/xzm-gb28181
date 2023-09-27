@@ -8,6 +8,7 @@
 #include "utils/log.h"
 #include "http/http_server.h"
 #include "xzm_defines.h"
+#include "deleter.h"
 
 const static std::string kConfPath = "./conf/config.json";
 
@@ -42,12 +43,16 @@ int main(int argc, char** argv)
         LOGE("start http_server error!");
         return -2;
     }
+    // 启动删除文件线程
+    Xzm::XDeleter::instance()->Start();
     // 等待服务退出
     unsigned int interval = 30;
     while (!Xzm::Server::is_server_quit && !Xzm::Server::is_client_all_quit) {
         CLOGI(YELLOW, "wait for server quit[%ds interval]...", interval);
         std::this_thread::sleep_for(std::chrono::milliseconds(interval * 1000));
     }
+    // 关闭删除文件线程
+    Xzm::XDeleter::instance()->Stop();
     // 关闭sip和http服务
     Xzm::Server::instance()->Stop();
     Xzm::XHttpServer::instance()->Stop();

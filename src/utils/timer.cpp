@@ -1,64 +1,33 @@
-#include "time.h"
+#include "timer.h"
+#include <iomanip>
+#include <sstream>
 
-namespace Xzm
-{
-const std::string TIME_FORMAT = "%Y-%m-%dT%H:%M:%S";
-// 将时间点信息转换为字符串的函数
-bool Timer::to_string(const _time_point& t, const std::string& date_fmt, std::string& result)
-{
-    std::time_t c_time_t = system_clk::to_time_t(t);
-    char mbstr[100];
-    size_t size = std::strftime(mbstr, sizeof(mbstr), date_fmt.c_str(), std::localtime(&c_time_t));
-    if(size) {
-        result = mbstr;
-        return true;
-    }
-    return false;
-} 
+namespace Xzm {
+namespace util {
 
-// 将字符串转换为time_point的函数
-void Timer::from_string(const std::string &src_str, const std::string& date_fmt, _time_point& out_t)
+Timer::Timer()
 {
-    std::stringstream ss{src_str};
-    std::tm dt;
-    ss >> std::get_time(&dt, date_fmt.c_str());
-    time_t c_time_t = std::mktime(&dt);
-    out_t = system_clk::from_time_t(c_time_t);
+
 }
 
-// 默认输出毫秒
-int64_t Timer::elapsed() const
+Timer::~Timer()
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(system_clk::now() - m_begin).count();
+
 }
 
-// 微秒
-int64_t Timer::elapsed_micro() const
+std::string Timer::GetCurrentTime()
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(system_clk::now() - m_begin).count();
+    time_t t = time(nullptr);
+    struct tm* _tm = localtime(&t);
+    std::stringstream ss;
+    ss << std::setw(4) << std::setfill('0') << _tm->tm_year + 1900 << "_"
+    << std::setw(2) << std::setfill('0') << _tm->tm_mon + 1 << "_"
+    << std::setw(2) << std::setfill('0') << _tm->tm_mday << "_"
+    << std::setw(2) << std::setfill('0') << _tm->tm_hour << "_"
+    << std::setw(2) << std::setfill('0') << _tm->tm_min << "_"
+    << std::setw(2) << std::setfill('0') << _tm->tm_sec;
+    return ss.str();
 }
 
-// 纳秒
-int64_t Timer::elapsed_nano() const
-{
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(system_clk::now() - m_begin).count();
-}
-
-// 秒
-int64_t Timer::elapsed_sec() const
-{
-    return std::chrono::duration_cast<std::chrono::seconds>(system_clk::now() - m_begin).count();
-}
-
-// 分
-int64_t Timer::elapsed_min() const
-{
-    return std::chrono::duration_cast<std::chrono::minutes>(system_clk::now() - m_begin).count();
-}
-
-// 时
-int64_t Timer::elapsed_hour() const
-{
-    return std::chrono::duration_cast<std::chrono::hours>(system_clk::now() - m_begin).count();
 }
 };

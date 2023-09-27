@@ -10,7 +10,7 @@
 #include <ostream>
 #include <thread>
 #include "../server.h"
-#include "../utils/time.h"
+#include "../utils/timer.h"
 #include "hv/hasync.h"
 #include "hv/requests.h"
 
@@ -42,6 +42,7 @@ bool XHttpServer::Init(const std::string& conf_path)
     JSON_VALUE_REQUIRE_INT(http_config, "port", s_info_.port);
     JSON_VALUE_REQUIRE_INT(http_config, "work_threads", s_info_.work_threads);
     JSON_VALUE_REQUIRE_INT(http_config, "work_process", s_info_.work_process);
+    JSON_VALUE_OPTION_INT(http_config, "snap_cache_time", s_info_.snap_cache_time, 3600);
 
     server_.service = &router;
     server_.port = s_info_.port;
@@ -387,9 +388,8 @@ int XHttpServer::get_snap(HttpRequest* req, HttpResponse* resp)
     << "&expire_sec=" << 30
     << "&secret=" << "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
     std::string snap_url = ss.str();
-    time_t t = time(nullptr);
     ss.str("");
-    ss << "./imgs/" << ssrc << "_" << t << ".jpg";
+    ss << "./imgs/" << Xzm::util::Timer::instance()->GetCurrentTime() << "_" << ssrc << ".jpg";
     std::string filepath = ss.str();
     requests::downloadFile(snap_url.c_str(), filepath.c_str());
     return resp->File(filepath.c_str());

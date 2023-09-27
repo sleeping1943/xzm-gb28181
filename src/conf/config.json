@@ -3,7 +3,9 @@
         "ip":"10.23.132.27",
         "port":18080,
         "work_threads": 0,
-        "work_process" : 0
+        "work_process" : 0,
+        "snap_cache_time_comment":"截图最多缓存多久,单位/秒",
+        "snap_cache_time":60
     },
     "sip_config":{
         "ua_comment":"user agent",
