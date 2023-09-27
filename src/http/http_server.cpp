@@ -12,6 +12,7 @@
 #include "../server.h"
 #include "../utils/time.h"
 #include "hv/hasync.h"
+#include "hv/requests.h"
 
 namespace Xzm
 {
@@ -49,6 +50,7 @@ bool XHttpServer::Init(const std::string& conf_path)
 
 
     BEGIN_HV_REGISTER_HANDLER()
+        /* 同步请求 */
         HV_REGISTER_SYNC_HANDLER(router, GET, "/query_device", XHttpServer, query_device_list, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/start_rtsp_publish", XHttpServer, start_rtsp_publish, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/stop_rtsp_publish", XHttpServer, stop_rtsp_publish, this);
@@ -61,23 +63,13 @@ bool XHttpServer::Init(const std::string& conf_path)
         HV_REGISTER_SYNC_HANDLER(router, GET, "/fast_forward_playback", XHttpServer, fast_forward_playback, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_publish", XHttpServer, on_publish, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_play", XHttpServer, on_play, this);
-        //HV_REGISTER_ASYNC_HANDLER(router, GET, "/refresh_device_library_async", XHttpServer, refresh_device_library_async, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/get_snap", XHttpServer, get_snap, this);
+
+        /* 异步请求 */
+        HV_REGISTER_ASYNC_HANDLER(router, GET, "/refresh_device_library_async", refresh_device_library_async, this);
 
         //router.POST("/refresh_device_library_async", std::bind(&XHttpServer::refresh_device_library_async, this, std::placeholders::_1));
         //router.POST("/11", std::bind(&XHttpServer::refresh_device_library_async, this, std::placeholders::_1));
-        router.GET("/refresh_device_library_async", [this] (const HttpContextPtr& context) {
-            std::string history_record_infos;
-            if (refresh_record_history__(context->request.get(), context->response.get()) < 0) {
-                return context->response->String("refresh record history error!");
-            }
-            hv::async([context, history_record_infos, this] () {
-                Server::instance()->WaitHistory();
-                //std::this_thread::sleep_for(std::chrono::seconds(10));
-                std::string history_video_list = query_device_library__(context->request.get(), context->response.get());
-                context->send(history_video_list, context->type());
-            });
-            return 0;
-        });
     END_HV_REGISTER_HANDLER()
 
     std::stringstream ss;
@@ -366,16 +358,41 @@ int XHttpServer::refresh_device_library(HttpRequest* req, HttpResponse* resp)
 
 int XHttpServer::refresh_device_library_async(const HttpContextPtr& context)
 {
-    std::string history_record_infos;
     if (refresh_record_history__(context->request.get(), context->response.get()) < 0) {
         return context->response->String("refresh record history error!");
     }
-    hv::async([context, history_record_infos] () {
+    hv::async([context, this] () {
         Server::instance()->WaitHistory();
-        std::string device_id = context->request->GetParam("device_id");
-        context->send(history_record_infos, context->type());
+        //std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::string history_video_list = query_device_library__(context->request.get(), context->response.get());
+        context->send(history_video_list, context->type());
     });
     return 0;
+}
+
+int XHttpServer::get_snap(HttpRequest* req, HttpResponse* resp)
+{
+    std::string ssrc = req->GetParam("ssrc");   // 16进制
+    if (ssrc.empty()) {
+        return resp->String(get_simple_info(400, "can not find param ssrc!"));
+    }
+    std::string media_server = Server::instance()->GetServerInfo().rtp_ip;
+    std::stringstream ss;
+    ss << "rtsp://" << media_server << "/rtp/" << ssrc;
+    std::string rtsp_url = ss.str();
+    ss.str("");
+    ss << "http://" << media_server << "/index/api/getSnap"
+    << "?url=" << rtsp_url
+    << "&timeout_sec=" << 10
+    << "&expire_sec=" << 30
+    << "&secret=" << "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
+    std::string snap_url = ss.str();
+    time_t t = time(nullptr);
+    ss.str("");
+    ss << "./imgs/" << ssrc << "_" << t << ".jpg";
+    std::string filepath = ss.str();
+    requests::downloadFile(snap_url.c_str(), filepath.c_str());
+    return resp->File(filepath.c_str());
 }
 
 int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)

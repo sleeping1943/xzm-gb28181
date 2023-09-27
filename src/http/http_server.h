@@ -74,6 +74,9 @@ private:
     /* 异步处理设备历史录像信息的查询 */
     int refresh_device_library_async(const HttpContextPtr& context);
 
+    /* 获取截图 */
+    int get_snap(HttpRequest* req, HttpResponse* resp);
+
     /**
      * @brief 请求指定设备开启推流
      * 
