@@ -51,8 +51,10 @@ namespace Xzm
 #define HV_REGISTER_SYNC_HANDLER(router, type, path, class, func, obj_ptr)    \
         router.type(path, std::bind(&class::func, obj_ptr, std::placeholders::_1, std::placeholders::_2));
 
-#define HV_REGISTER_ASYNC_HANDLER(router, type, path, class, func, obj_ptr)    \
-        router.type(path, std::bind(&class::func, obj_ptr, std::placeholders::_1));
+#define HV_REGISTER_ASYNC_HANDLER(router, type, path, func, obj_ptr)    \
+        router.type(path, [obj_ptr] (const HttpContextPtr& context) {   \
+            return obj_ptr->func(context);  \
+        });
 #define END_HV_REGISTER_HANDLER() };
 
 /* xml解析 */
