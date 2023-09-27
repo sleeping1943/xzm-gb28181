@@ -313,6 +313,7 @@ struct HttpServerInfo
     unsigned short port;
     unsigned int work_threads;
     unsigned int work_process;
+    unsigned int snap_cache_time;
 };
 
 struct ClientInfo

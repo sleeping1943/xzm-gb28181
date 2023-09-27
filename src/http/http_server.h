@@ -30,6 +30,10 @@ public:
     bool Stop();
     bool Run();
 
+    inline unsigned int GetSnapCacheTime() {
+        return s_info_.snap_cache_time;
+    }
+
 private:
     XHttpServer();
     /**
