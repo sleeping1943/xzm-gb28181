@@ -12,6 +12,7 @@
 #include "event_handler/register_handler.h"
 #include "event_handler/call_answer_handler.h"
 #include "event_handler/call_message_answer_handler.h"
+#include "event_handler/invite_handler.h"
 #include "xzm_defines.h"
 
 /*
@@ -378,6 +379,8 @@ bool Server::register_event_handler()
         REGISTER_EVENT_HANDLER(EXOSIP_MESSAGE_NEW, RegisterHandler), // 新客户端发送请求
         REGISTER_EVENT_HANDLER(EXOSIP_CALL_ANSWERED, CallAnswerHandler), // 宣布通话开始
         REGISTER_EVENT_HANDLER(EXOSIP_CALL_MESSAGE_ANSWERED, CallMessageAnswerHandler), // 宣布通话正常有效
+        REGISTER_EVENT_HANDLER(EXOSIP_CALL_INVITE, InviteHandler), // 宣布通话正常有效
+
     END_REGISTER_EVENT_HANDLER 
         //{ EXOSIP_MESSAGE_NEW, std::make_shared<RegisterHandler>()}, // 新客户端发送请求
         //{ EXOSIP_CALL_MESSAGE_NEW, nullptr},

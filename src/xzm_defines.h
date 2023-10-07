@@ -19,10 +19,12 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <codecvt>
+#include <thread>
 
 namespace Xzm
 {
 
+#define TALK_PREFIX "talk_"
 /* 国标信令注册 */
 #define BEGIN_REGISTER_EVENT_HANDLER    \
     event_map_ = std::unordered_map<eXosip_event_type, HandlerPtr>{
@@ -191,6 +193,13 @@ const static std::unordered_map<std::string, XClientType> kRegistedClientType = 
 {"IP Camera", kClientIPC },
 };
 
+/* 推流信息 */
+struct StreamInfo
+{
+    std::string ip;
+    short port;
+};
+
 /* xml消息的查询参数信息 */
 class XmlQueryParam
 {
@@ -339,14 +348,14 @@ using ClientInfoPtr = std::shared_ptr<ClientInfo>;
 struct Client
 {
     Client(const std::string& _ip, unsigned short _port,
-    const std::string& _device): ip(_ip),port(_port),device(_device)
+    const std::string& _device): ip(_ip),port(_port),device(_device),is_talking(false)
     {
 
     }
 
     Client(const std::string& _ip, unsigned short _port,
     const std::string& _device, bool _is_reg, unsigned short _rtp_port, XClientType _client_type):
-    ip(_ip),port(_port),device(_device),is_reg(_is_reg),rtp_port(_rtp_port),client_type(_client_type)
+    ip(_ip),port(_port),device(_device),is_reg(_is_reg),rtp_port(_rtp_port),client_type(_client_type),is_talking(false)
     {
 
     }
@@ -356,7 +365,7 @@ struct Client
     std::string ip;
     unsigned short port = 0;
     std::string device; // 设备本身ID
-    std::string real_device_id; // 实际操作id，如nvr播放沢是通道id
+    std::string real_device_id; // 实际操作id，如nvr播放则是通道id
     bool is_reg = false;
     unsigned short rtp_port = 10000;
     std::string ssrc;   // 10进制
@@ -364,6 +373,8 @@ struct Client
     XClientType client_type = kClientNone;
     std::unordered_map<std::string, ClientInfoPtr> client_infos_;   // 每个设备有多个信息，如摄像头有视频和音频2个设备信息
     XmlQueryParamPtr param_ptr;
+    std::thread talk_thread;    // 对话功能收音发送线程
+    std::atomic_bool is_talking;    // 客户端是否正在对话
 };
 using ClientPtr = std::shared_ptr<Client>;
 

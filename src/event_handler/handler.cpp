@@ -1,7 +1,9 @@
 #include "handler.h"
 #include "../utils/log.h"
+#include <cctype>
 #include <chrono>
 #include <memory>
+#include <osipparser2/headers/osip_header.h>
 #include <osipparser2/osip_message.h>
 #include <osipparser2/osip_parser.h>
 #include <ostream>
@@ -65,6 +67,16 @@ void Handler::response_message(eXosip_event_t *evtp, eXosip_t * sip_context_, in
         LOGE("evtp or evtp->requets is nullptr!");
         return;
     }
+
+    auto cseq_t = osip_message_get_cseq(evtp->request);
+    std::string method = cseq_t ? cseq_t->method : "";
+    std::transform(method.begin(), method.end(), method.begin(), [] (char c) {
+        return std::tolower(c);
+    });
+    if (method == "ack"
+    || method == "invite") {  // invite/ack等包没有xml报文,不能解析出cmdtype和deviceid,不响应即可
+        return;
+    }
     osip_body_t* body = nullptr;
     char CmdType[64] = {0};
     char DeviceID[64] = {0};
@@ -75,7 +87,7 @@ void Handler::response_message(eXosip_event_t *evtp, eXosip_t * sip_context_, in
         parse_xml(body->body, "<DeviceID>", false, "</DeviceID>", false, DeviceID);
         //CLOGI(YELLOW, "%s", body->body);
     }
-    
+
     if (Server::is_server_quit) {    // 已经开始关闭服务,删除该客户端,发送bye
         Server::instance()->RemoveClient(DeviceID);
         request_bye(evtp, sip_context_);

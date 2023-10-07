@@ -107,6 +107,7 @@ private:
 public:
     static std::atomic_bool is_server_quit;
     static std::atomic_bool is_client_all_quit;
+    static std::unordered_map<std::string, StreamInfo> stream_infos_;   // <stream_id, StreamInfo>,stream_id以"talk_"开头
 
 private:
     std::atomic_bool is_quit_;

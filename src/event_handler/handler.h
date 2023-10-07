@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include "../xzm_defines.h"
 #include "boost/any.hpp"
+#include <thread>
 
 namespace Xzm
 {
@@ -81,6 +82,7 @@ private:
     std::atomic_bool is_print;
     static uint64_t sn_;   // 命令序列号
     std::map<DeviceID, std::atomic_int> history_video_cache_;   // <device_id, 当前解析出的历史录像个数>
+    std::thread thread_;
 };
 using HandlerPtr = std::shared_ptr<Handler>;
 };

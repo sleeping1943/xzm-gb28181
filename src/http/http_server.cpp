@@ -476,7 +476,7 @@ int XHttpServer::start_talk_broadcast(HttpRequest* req, HttpResponse* resp)
     if (device_id.empty()) {
         return resp->String(get_simple_info(400, "错误的device_id"));
     }
-    auto client_ptr = Server::instance()->FindClient(device_id);
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
     if (!client_ptr) {
         return resp->String(get_simple_info(400, "找不到对应的设备信息"));
     }
