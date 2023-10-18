@@ -93,9 +93,10 @@ bool RegisterHandler::register_client(eXosip_event_t *evtp, eXosip_t* sip_contex
             break;
         }
         this->response_message_answer(evtp, sip_context_, 200);
-        if (client->client_type <= kClientNone && client->client_type >= kClientMax) {    // 只保存IP Camera,NVR类型客户端
-            break;
-        }
+        // 不过滤设备类型,后面标识通道类型即可
+        //if (client->client_type <= kClientNone && client->client_type >= kClientMax) {    // 只保存IP Camera,NVR类型客户端
+        //    break;
+        //}
         LOGI("IP Camera registration success,ip=%s,port=%d,device=%s,type:%d",client->ip.c_str(),client->port,client->device.c_str(), client->client_type);
         if (!Server::instance()->IsClientExist(client->device)) {   // 不存在该客户端
             Server::instance()->AddClient(client);

@@ -1,5 +1,7 @@
 #include "handler.h"
 #include "../utils/log.h"
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <cctype>
 #include <chrono>
 #include <memory>
@@ -679,15 +681,42 @@ int Handler::parse_device_xml(const std::string& xml_str)
         , [] (unsigned char c) {
                 return std::tolower(c);
             });
-        if (str_client_type.find("camera") != std::string::npos) {
-            client_info->channel_type = kChannelVideo;
-        } else if (str_client_type.find("audio") != std::string::npos) {
-            client_info->channel_type = kChannelAudio;
-        } else if (str_client_type.find("alarm") != std::string::npos) {
-            client_info->channel_type = kChannelAlarm;
-        } else {
-            client_info->channel_type = kChannelNone;
-        }
+        auto s_info = Server::instance()->GetServerInfo();
+        client_info->channel_type = kChannelNone;
+        do {
+            if (str_client_type.find("camera") != std::string::npos) {
+                client_info->channel_type = kChannelVideo;
+                break;
+            }
+            if (str_client_type.find("audio") != std::string::npos) {
+                client_info->channel_type = kChannelAudio;
+                break;
+            }
+            if (str_client_type.find("alarm") != std::string::npos) {
+                client_info->channel_type = kChannelAlarm;
+                break;
+            }
+            if (!boost::starts_with(client_info->device_id, s_info.realm)) {
+                break;
+            }
+            auto id_type = client_info->device_id.substr(s_info.realm.length());
+            if (id_type.length() < 3) {
+                break;
+            }
+            // 根据id里13开头确定通道类型
+            if (!id_type.compare(0, 3, "132")) {
+                client_info->channel_type = kChannelVideo;
+                break;
+            }
+            if (!id_type.compare(0, 3, "134")) {
+                client_info->channel_type = kChannelAlarm;
+                break;
+            }
+            if (!id_type.compare(0, 3, "137")) {
+                client_info->channel_type = kChannelAudio;
+                break;
+            }
+        } while (0);
         client_info->name = Xzm::util::Chinese::instance()->GBKToUTF8(client_info->name);
         client_infos[client_info->device_id] = client_info;
         node_device_item = node_device_item->NextSiblingElement("Item");
