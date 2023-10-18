@@ -133,42 +133,46 @@ namespace Xzm
         int ser_port = 0, ret_code = 0;
         std::string secret = "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
         std::string stream_id = TALK_PREFIX;
+        std::string str_app = "rtp";
         stream_id += Xzm::util::convert10to16(ssrc);
-        char sz_url[256] = {0};
-        snprintf(sz_url, 256,
-         "http://%s/index/api/openRtpServer?secret=%s&port=%d&tcp_mode=%d&stream_id=%s",
-        Server::instance()->GetServerInfo().rtp_ip.c_str(), secret.c_str(), 0, 0, stream_id.c_str());
-        auto resp = requests::get(sz_url);
-        auto ret_json = resp->GetJson();
-        HV_JSON_GET_INT(ret_json, ret_code, "code");
-        HV_JSON_GET_INT(ret_json, ser_port, "port");
-        if (ret_code != 0) {
-            return false;
-        }
-        client_ptr->talk_thread = std::thread([ser_port, client_ptr]() {
+        //char sz_url[256] = {0};
+        //snprintf(sz_url, 256,
+        // "http://%s/index/api/openRtpServer?secret=%s&port=%d&tcp_mode=%d&stream_id=%s",
+        //Server::instance()->GetServerInfo().rtp_ip.c_str(), secret.c_str(), 0, 0, stream_id.c_str());
+        //auto resp = requests::get(sz_url);
+        //auto ret_json = resp->GetJson();
+        //HV_JSON_GET_INT(ret_json, ret_code, "code");
+        //HV_JSON_GET_INT(ret_json, ser_port, "port");
+        //if (ret_code != 0) {
+        //    return false;
+        //}
+        client_ptr->talk_thread = std::thread([ser_port, client_ptr, str_app, stream_id]() {
             client_ptr->is_talking.store(true);
             char cmd[256] = {0};
-            snprintf(cmd, 256, "ffmpeg -re -stream_loop -1 -i \"./1.mp4\" -vcodec h264 -acodec copy -f rtp_mpegts rtp://10.23.132.27:%d", ser_port);
+            snprintf(cmd, 256, "ffmpeg -re -stream_loop -1 -i \"./1.mp4\" -vn -acodec copy -f rtsp rtsp://10.23.132.27:554/%s/%s"
+            , str_app.c_str(), stream_id.c_str());
             CLOGE(BLUE, "publish_cmd:%s", cmd);
             system(cmd);    // 这里会阻塞，需要异步执行，且对话结束后，需要结束推流
         });
         client_ptr->talk_thread.detach();
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        return true;
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        //return true;
         // 根据默认的stream_id构建出url
         char audio_url[128] = {0};
         snprintf(audio_url, 128, "rtsp://%s/rtp/%s", Server::instance()->GetServerInfo().rtp_ip.c_str(), stream_id.c_str());
 
-        int is_udp = 1, pt=96, use_ps=0, only_audio=1;
+        int is_udp = 1, pt=8, use_ps=1, only_audio=1;
         char publish_url[1024] = {0};
         snprintf(publish_url, 1024,
-         "http://%s/index/api/startSendRtp?secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%s&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
-         Server::instance()->GetServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS",
-          stream_id.c_str(), stream_id.c_str(),client_ip.c_str(),str_port.c_str(), is_udp, pt, use_ps, only_audio
+         "http://%s/index/api/startSendRtp?"
+         "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%s&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
+         Server::instance()->GetServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
+         //, str_app.c_str(), stream_id.c_str(), stream_id.c_str(),"10.23.132.77","8020",/*client_ip.c_str(),str_port.c_str(),*/ is_udp, pt, use_ps, only_audio
+         , stream_id.c_str(), stream_id.c_str(),client_ip.c_str(),str_port.c_str(), is_udp, pt, use_ps, only_audio
          );
         CLOGI(YELLOW, "url:%s", publish_url);
-        resp = requests::get(publish_url);
-        ret_json = resp->GetJson();
+        auto resp = requests::get(publish_url);
+        auto ret_json = resp->GetJson();
         int publish_code = 0;
         HV_JSON_GET_INT(ret_json, publish_code, "code");
         if (publish_code != 0) {
