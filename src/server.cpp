@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <utility>
 #include "event_handler/register_handler.h"
 #include "event_handler/call_answer_handler.h"
 #include "event_handler/call_message_answer_handler.h"
@@ -369,6 +370,30 @@ void Server::CleanLivingInfos()
     living_info_map_.clear();
 }
 
+
+std::pair<int, int> Server::FindPublishStreamInfo(const std::string& ssrc)
+{
+    ReadLock _lock(publish_streams_mutext_);
+    if (publish_streams_.count(ssrc) > 0) {
+        return publish_streams_[ssrc];
+    }
+    return std::make_pair(-1, -1);
+}
+
+void Server::AddPublishStreamInfo(const std::string& ssrc, int cid, int did)
+{
+    WriteLock _lock(publish_streams_mutext_);
+    publish_streams_[ssrc] = std::make_pair(cid, did);
+}
+
+void Server::DelPublishStreamInfo(const std::string& ssrc)
+{
+    WriteLock _lock(publish_streams_mutext_);
+    if (publish_streams_.count(ssrc) > 0) {
+        publish_streams_.erase(ssrc);
+    }
+}
+
 bool Server::run()
 {
     while (true) {
@@ -448,6 +473,8 @@ int Server::process_request()
         case kRequestTypeMax:
         break;
         case kRequestTypeCancel:
+            CLOGI(RED, "process request cancel invite................................");
+            kDefaultHandler->request_cancel_invite(sip_context_, client_req);
         break;
         case kRequestTypeTalk:  // 开启对话请求
             CLOGI(RED, "process request send invite................................");

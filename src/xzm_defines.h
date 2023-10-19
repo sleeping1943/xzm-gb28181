@@ -423,6 +423,7 @@ struct ClientRequest
     ClientPtr client_ptr;
     RequestType req_type;
     RequestParamPtr param_ptr;
+    std::string ssrc;
 };
 using ClientRequestPtr = std::shared_ptr<ClientRequest>;
 using RequestQueue = std::queue<ClientRequestPtr>;

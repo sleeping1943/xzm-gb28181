@@ -57,7 +57,8 @@ bool CallAnswerHandler::Process(eXosip_event_t *evtp, eXosip_t* sip_context_, in
     dump_response(evtp);
     if (!ret && msg) {
         eXosip_call_send_ack(sip_context_, evtp->did, msg);
-        LOGI("eXosip_call_send_ack OK");
+        gServer->AddPublishStreamInfo(ssrc, evtp->cid, evtp->did);
+        LOGI("eXosip_call_send_ack OK, Add PublishStreamInfo, ssrc[%s], cid[%d], did[%d]", ssrc.c_str(), evtp->cid, evtp->did);
     } else {
         LOGE("eXosip_call_send_ack error=%d", ret);
     }

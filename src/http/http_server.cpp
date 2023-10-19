@@ -435,9 +435,14 @@ int XHttpServer::stop_rtsp_publish(HttpRequest* req, HttpResponse* resp)
     if (!client_ptr) {
         return resp->String(get_simple_info(101, "can not find the device client"));
     }
+    std::string ssrc = req->GetParam("ssrc");
+    if (ssrc.empty()) {
+        return resp->String(get_simple_info(400, "can not find param ssrc!"));
+    }
     auto req_ptr = std::make_shared<ClientRequest>();
     req_ptr->client_ptr = client_ptr;
     req_ptr->req_type = kRequestTypeCancel;
+    req_ptr->ssrc = ssrc;
     Server::instance()->AddRequest(req_ptr);
     resp->json["code"] = 0; // 鉴权成功
     resp->json["data"]["device"] = device;

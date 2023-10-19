@@ -55,6 +55,22 @@ bool Handler::Process(eXosip_event_t *evtp, eXosip_t* sip_context_, int code)
     return true;
 }
 
+int Handler::request_cancel_invite(eXosip_t* sip_context_, ClientRequestPtr req)
+{
+    std::string ssrc = req->ssrc;
+    auto info_ids = gServer->FindPublishStreamInfo(ssrc);
+    int cid = info_ids.first;
+    int did = info_ids.second;
+    if (cid < 0 || did < 0) {
+        return -1;
+    }
+    eXosip_lock(sip_context_);
+    int ret = eXosip_call_terminate(sip_context_, cid, did);
+    eXosip_unlock(sip_context_);
+    gServer->DelPublishStreamInfo(ssrc);
+    return 0;
+}
+
 int Handler::request_bye(eXosip_event_t *evtp, eXosip_t *sip_context_)
 {
     eXosip_lock(sip_context_);

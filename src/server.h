@@ -86,6 +86,17 @@ public:
     void DelLivingInfoPtr(const std::string& stream_id);
     void CleanLivingInfos();
 
+    std::pair<int, int> FindPublishStreamInfo(const std::string& ssrc);
+
+    /**
+    * @brief 添加推流记录
+    * 
+    * @param ssrc stream_id
+    * @param cid call id of call
+    * @param did dialog id of call
+    */
+    void AddPublishStreamInfo(const std::string& ssrc, int cid, int did);
+    void DelPublishStreamInfo(const std::string& ssrc);
 
 public:
     static HandlerPtr kDefaultHandler;
@@ -138,5 +149,9 @@ private:
 
     B_Lock living_info_mutex_;
     LivingInfoMap living_info_map_;
+
+    B_Lock publish_streams_mutext_;
+    std::unordered_map<std::string, std::pair<int, int>> publish_streams_;   // 正在推流直播的rtsp, <ssrc, <cid, did>>
 };
+#define gServer Server::instance()
 };

@@ -34,6 +34,8 @@ public:
     virtual ~Handler();
     virtual bool Process(eXosip_event_t *evtp, eXosip_t* sip_context_, int code);
 
+    /* 断开摄像头推流到流服务器的连接 */
+    int request_cancel_invite(eXosip_t* sip_context_, ClientRequestPtr req);
     /**
      * @brief 结束会话
      * 
