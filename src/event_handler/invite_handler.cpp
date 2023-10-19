@@ -4,6 +4,7 @@
 #include <boost/regex.h>
 #include <boost/algorithm/string/regex.hpp>
 #include <chrono>
+#include <memory>
 #include <osipparser2/headers/osip_via.h>
 #include <osipparser2/sdp_message.h>
 #include <ostream>
@@ -100,12 +101,14 @@ namespace Xzm
                 "s=Play\r\n"
                 "c=IN IP4 %s\r\n"
                 "t=0 0\r\n"
-                "m=%s %s %s 96\r\n"
+                "m=%s %s %s 8 96\r\n"
                 "a=sendonly\r\n"
+                "a=rtpmap:8 PCMA/8000\r\n"
                 "a=rtpmap:96 PS/90000\r\n"
-                "a=setup:passive\r\n"
-                "a=connection:new\r\n"
-                "y=%s\r\n", username.c_str(),client_ip.c_str(), client_ip.c_str(),
+                //"a=setup:passive\r\n"
+                //"a=connection:new\r\n"
+                "y=%s\r\n"
+                "f=v/////a/1/8/1\r\n", username.c_str(),client_ip.c_str(), client_ip.c_str(),
                 media_type.c_str(), str_port.c_str(), str_proto.c_str(), ssrc.c_str());
                 //"f=\r\n", username.c_str(),client_ip.c_str(), client_ip.c_str(), str_port.c_str(), str_proto.c_str(), ssrc.c_str());
             }
@@ -135,39 +138,52 @@ namespace Xzm
         std::string stream_id = TALK_PREFIX;
         std::string str_app = "rtp";
         stream_id += Xzm::util::convert10to16(ssrc);
-        //char sz_url[256] = {0};
-        //snprintf(sz_url, 256,
-        // "http://%s/index/api/openRtpServer?secret=%s&port=%d&tcp_mode=%d&stream_id=%s",
-        //Server::instance()->GetServerInfo().rtp_ip.c_str(), secret.c_str(), 0, 0, stream_id.c_str());
-        //auto resp = requests::get(sz_url);
-        //auto ret_json = resp->GetJson();
-        //HV_JSON_GET_INT(ret_json, ret_code, "code");
-        //HV_JSON_GET_INT(ret_json, ser_port, "port");
-        //if (ret_code != 0) {
-        //    return false;
-        //}
-        client_ptr->talk_thread = std::thread([ser_port, client_ptr, str_app, stream_id]() {
+    //#define PUBLISH_GB28181
+    #ifdef PUBLISH_GB28181
+        char sz_url[256] = {0};
+        snprintf(sz_url, 256,
+         "http://%s/index/api/openRtpServer?secret=%s&port=%d&tcp_mode=%d&stream_id=%s",
+        Server::instance()->GetServerInfo().rtp_ip.c_str(), secret.c_str(), 0, 0, stream_id.c_str());
+        auto resp = requests::get(sz_url);
+        auto ret_json = resp->GetJson();
+        HV_JSON_GET_INT(ret_json, ret_code, "code");
+        HV_JSON_GET_INT(ret_json, ser_port, "port");
+        if (ret_code != 0) {
+            return false;
+        }
+    #endif
+        client_ptr->talk_thread = std::thread([client_ip, str_port, ser_port, client_ptr, str_app, stream_id]() {
             client_ptr->is_talking.store(true);
+            LivingInfoPtr info_ptr = std::make_shared<LivingInfo>();
+            info_ptr->ip = client_ip;
+            info_ptr->port = std::stoi(str_port);
+            info_ptr->stream_id = stream_id;
+            Server::instance()->AddLivingInfoPtr(stream_id, info_ptr);
+
             char cmd[256] = {0};
-            snprintf(cmd, 256, "ffmpeg -re -stream_loop -1 -i \"./1.mp4\" -vn -acodec copy -f rtsp rtsp://10.23.132.27:554/%s/%s"
+    #ifdef PUBLISH_GB28181
+            snprintf(cmd, 256, "ffmpeg.exe -re -stream_loop -1 -i \"./1.mp4\" -vcodec h264 -acodec aac -f rtp_mpegts rtp://10.23.132.27:%d");
+    #else
+            snprintf(cmd, 256,
+             "ffmpeg -re -stream_loop -1 -i \"./1.mp4\"" \
+            " -vn -acodec copy -f rtsp rtsp://10.23.132.27:554/%s/%s"
             , str_app.c_str(), stream_id.c_str());
+    #endif
             CLOGE(BLUE, "publish_cmd:%s", cmd);
             system(cmd);    // 这里会阻塞，需要异步执行，且对话结束后，需要结束推流
         });
         client_ptr->talk_thread.detach();
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        //return true;
-        // 根据默认的stream_id构建出url
-        char audio_url[128] = {0};
-        snprintf(audio_url, 128, "rtsp://%s/rtp/%s", Server::instance()->GetServerInfo().rtp_ip.c_str(), stream_id.c_str());
-
+        
+        // 以下推流到摄像头逻辑修改为推流后执行
+        /*
         int is_udp = 1, pt=8, use_ps=1, only_audio=1;
         char publish_url[1024] = {0};
         snprintf(publish_url, 1024,
          "http://%s/index/api/startSendRtp?"
          "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%s&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
          Server::instance()->GetServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
-         //, str_app.c_str(), stream_id.c_str(), stream_id.c_str(),"10.23.132.77","8020",/*client_ip.c_str(),str_port.c_str(),*/ is_udp, pt, use_ps, only_audio
+         //, str_app.c_str(), stream_id.c_str(), stream_id.c_str(),"10.23.132.77","8020",/*client_ip.c_str(),str_port.c_str(),* / is_udp, pt, use_ps, only_audio
          , stream_id.c_str(), stream_id.c_str(),client_ip.c_str(),str_port.c_str(), is_udp, pt, use_ps, only_audio
          );
         CLOGI(YELLOW, "url:%s", publish_url);
@@ -180,6 +196,7 @@ namespace Xzm
             return false;
         }
         std::cout << "\n----------------------------body:" << resp->body << std::endl;
+        */
         return true;
     }
 };

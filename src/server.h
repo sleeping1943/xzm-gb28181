@@ -81,9 +81,16 @@ public:
     void RemovePlaybackInfo(const std::string& ssrc);
     int GetPlaybackId(const std::string& ssrc);
 
+    LivingInfoPtr FindLivingInfoPtr(const std::string& stream_id);
+    void AddLivingInfoPtr(const std::string& stream_id, LivingInfoPtr info);
+    void DelLivingInfoPtr(const std::string& stream_id);
+    void CleanLivingInfos();
+
+
 public:
     static HandlerPtr kDefaultHandler;
 
+    std::map<std::string, bool> living_states_; // <id, state>  对应id的摄像头是否服务器已经在对其推流,id即ssrc
 
 private:
     bool init_sip_server();
@@ -128,5 +135,8 @@ private:
     
     B_Lock playback_mutex_;
     std::map<std::string, int> playback_infos_; // <ssrc, dialog_id>
+
+    B_Lock living_info_mutex_;
+    LivingInfoMap living_info_map_;
 };
 };

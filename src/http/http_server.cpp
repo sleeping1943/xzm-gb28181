@@ -64,6 +64,7 @@ bool XHttpServer::Init(const std::string& conf_path)
         HV_REGISTER_SYNC_HANDLER(router, GET, "/fast_forward_playback", XHttpServer, fast_forward_playback, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_publish", XHttpServer, on_publish, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_play", XHttpServer, on_play, this);
+        HV_REGISTER_SYNC_HANDLER(router, POST, "/on_stream_changed", XHttpServer, on_stream_changed, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/get_snap", XHttpServer, get_snap, this);
 
         /* 异步请求 */
@@ -167,7 +168,8 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
         rapidjson::Value arr_client_info(rapidjson::kArrayType);
         for (const auto& obj : device->client_infos_) {
             auto client_info = obj.second;
-            if (client_info->channel_type != kChannelVideo) {   // 暂只返回视频通道
+            if (client_info->channel_type != kChannelVideo
+            && client_info->channel_type != kChannelAudio) {   // 暂只返回音视频通道
                 continue;
             }
             rapidjson::Value value(rapidjson::kObjectType);
@@ -642,5 +644,62 @@ int XHttpServer::on_play(HttpRequest* req, HttpResponse* resp)
     resp->json["code"] = 0; // 鉴权成功
     resp->json["msg"] = "success";
     return kHttpOK; // http调用成功
+}
+
+int XHttpServer::on_stream_changed(HttpRequest* req, HttpResponse* resp)
+{
+    CLOGI(RED, "\n------------------------------------------http on stream_changed---------------------------------\n");
+    std::cout << CYAN << req->Dump(true, true) << DEFAULT_COLOR << std::endl;
+    auto obj_json = req->GetJson();
+    bool is_regist = false;
+    std::string stream_id;  // 流id
+    HV_JSON_GET_BOOL(obj_json, is_regist, "regist");
+    HV_JSON_GET_STRING(obj_json, stream_id, "stream");
+    do {
+        if (is_regist) {    // 有数据流注册
+            auto info_ptr = Server::instance()->FindLivingInfoPtr(stream_id);
+            if (nullptr == info_ptr) {
+                CLOGI(RED, "\n------------can not find living info_ptr,stream_id[%s]-------------------------\n", stream_id.c_str());
+                break;
+            }
+
+            if (Server::instance()->living_states_.count(stream_id) > 0) {
+                CLOGI(RED, "\n------------already publish living,stream_id[%s]-------------------------\n", stream_id.c_str());
+                std::cout << YELLOW << stream_id << " is already published..." << DEFAULT_COLOR << std::endl;
+                break;
+            }
+            Server::instance()->living_states_[stream_id] = true;
+            int is_udp = 1, pt=8, use_ps=1, only_audio=1;
+            char publish_url[1024] = {0};
+            snprintf(publish_url, 1024,
+            "http://%s/index/api/startSendRtp?"
+            "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%d&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
+            Server::instance()->GetServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
+            , stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), info_ptr->port, is_udp, pt, use_ps, only_audio
+            //, stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), 10000, is_udp, pt, use_ps, only_audio
+            //, stream_id.c_str(), stream_id.c_str(),"10.23.132.27", 10000, is_udp, pt, use_ps, only_audio
+            );
+            CLOGI(YELLOW, "stream_changed-------------------url:%s", publish_url);
+        #if 1
+            auto resp = requests::get(publish_url);
+            auto ret_json = resp->GetJson();
+            int publish_code = 0;
+            HV_JSON_GET_INT(ret_json, publish_code, "code");
+            if (publish_code != 0) {
+                LOGE("--------------------startSendRtp failed!,code:%d", publish_code);
+                return false;
+            }
+            std::cout << "\n----------------------------body:" << resp->body << std::endl;
+        #endif
+
+        } else {    // 有数据流注销
+            Server::instance()->DelLivingInfoPtr(stream_id);
+            Server::instance()->living_states_.erase(stream_id);
+        }
+    } while (0);
+
+    resp->json["code"] = 0; // 鉴权成功
+    resp->json["msg"] = "success";
+    return kHttpOK;
 }
 };

@@ -163,6 +163,15 @@ private:
      */
     int on_play(HttpRequest* req, HttpResponse* resp);
 
+    /**
+     * @brief 当数据流注册或者注销时触发
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int on_stream_changed(HttpRequest* req, HttpResponse* resp);
+
     inline std::string get_simple_info(int code, const std::string& msg)
     {
         std::stringstream ss;

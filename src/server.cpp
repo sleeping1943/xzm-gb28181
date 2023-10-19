@@ -336,6 +336,39 @@ int Server::GetPlaybackId(const std::string& ssrc)
     return -1;
 }
 
+LivingInfoPtr Server::FindLivingInfoPtr(const std::string& stream_id)
+{
+    ReadLock _lock(living_info_mutex_);
+    if (living_info_map_.count(stream_id) > 0) {
+        return living_info_map_[stream_id];
+    }
+    return nullptr;
+}
+
+void Server::AddLivingInfoPtr(const std::string& stream_id, LivingInfoPtr info)
+{
+    WriteLock _lock(living_info_mutex_);
+    if (living_info_map_.count(stream_id) <= 0) {
+        living_info_map_[stream_id] = info;
+    }
+    return;
+}
+
+void Server::DelLivingInfoPtr(const std::string& stream_id)
+{
+    WriteLock _lock(living_info_mutex_);
+    if (living_info_map_.count(stream_id) > 0) {
+        living_info_map_.erase(stream_id);
+    }
+    return;
+}
+
+void Server::CleanLivingInfos()
+{
+    WriteLock _lock(living_info_mutex_);
+    living_info_map_.clear();
+}
+
 bool Server::run()
 {
     while (true) {

@@ -44,6 +44,7 @@ namespace Xzm
 /* libhv的json解析 */
 #define HV_JSON_GET_INT(json, to, key) HV_JSON_GET_VALUE(json, to, key, number_integer)
 #define HV_JSON_GET_STRING(json, to, key) HV_JSON_GET_VALUE(json, to, key, string)
+#define HV_JSON_GET_BOOL(json, to, key) HV_JSON_GET_VALUE(json, to, key, boolean)
 #define HV_JSON_GET_VALUE(json, to, key, type) auto iter_##to = json.find(key); \
     if (iter_##to->is_##type()) { \
         to = iter_##to.value(); \
@@ -192,6 +193,16 @@ const static std::unordered_map<std::string, XClientType> kRegistedClientType = 
 {"Embedded Net DVR/NVR/DVS", kClientNVR },
 {"IP Camera", kClientIPC },
 };
+
+/* 实时流信息 */
+struct LivingInfo
+{
+    std::string stream_id;
+    std::string ip;
+    short port;
+};
+using LivingInfoPtr = std::shared_ptr<LivingInfo>;
+using LivingInfoMap = std::map<std::string, LivingInfoPtr>;
 
 /* 推流信息 */
 struct StreamInfo
