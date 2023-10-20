@@ -14,10 +14,6 @@
         "nonce":"1232413141231412",
         "ip":"10.23.132.27",
         "port": 15060,
-        "rtp_ip_commnet":"流媒体服务器IP",
-        "rtp_ip":"10.23.132.27",
-        "rtpPort_commnet":"流媒体服务器端口",
-        "rtpPort":10000,
         "sipId_comment":"sip服务器ID",
         "sipId":"34020000002000000001",
         "sipRealm_comment":"sip域",
@@ -28,5 +24,16 @@
         "sipTimeout":1800,
         "sipExpiry_comment":"有效时常",
         "sipExpiry":3600
+    },
+    "media_server_config":{
+        "rtp_ip_commnet":"流媒体服务器IP",
+        "rtp_ip":"10.23.132.27",
+        "rtpPort_commnet":"流媒体服务器端口",
+        "rtpPort":10000,
+        "rtp_proxy_port_min_comment":"对讲的流服务器使用的最小port,注意,需要和ZLMediakit的rtp_proxy配置对应",
+        "rtp_proxy_port_min":50000,
+        "rtp_proxy_port_max_comment":"对讲的流服务器使用的最大port,注意,需要和ZLMediakit的rtp_proxy配置对应",
+        "rtp_proxy_port_max":51000
     }
+    
 }

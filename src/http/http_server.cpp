@@ -379,7 +379,7 @@ int XHttpServer::get_snap(HttpRequest* req, HttpResponse* resp)
     if (ssrc.empty()) {
         return resp->String(get_simple_info(400, "can not find param ssrc!"));
     }
-    std::string media_server = Server::instance()->GetServerInfo().rtp_ip;
+    std::string media_server = Server::instance()->GetMediaServerInfo().rtp_ip;
     std::stringstream ss;
     ss << "rtsp://" << media_server << "/rtp/" << ssrc;
     std::string rtsp_url = ss.str();
@@ -411,9 +411,10 @@ int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)
     req_ptr->client_ptr = client_ptr;
     client_ptr->real_device_id = device;
     auto s_info = Server::instance()->GetServerInfo();
+    auto media_info = Server::instance()->GetMediaServerInfo();
     client_ptr->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);
-    client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
+    client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(media_info.rtp_ip, ssrc);
     req_ptr->req_type = kRequestTypeInvite;
     Server::instance()->AddRequest(req_ptr);
     CLOGI(RED, "seond invite request...............................");
@@ -531,9 +532,10 @@ int XHttpServer::start_playback(HttpRequest* req, HttpResponse* resp)
         return resp->String(get_simple_info(400, e.what()));
     }
     auto s_info = Server::instance()->GetServerInfo();
+    auto media_info = Server::instance()->GetMediaServerInfo();
     client_ptr->ssrc = Xzm::util::build_ssrc(false, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);
-    client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
+    client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(media_info.rtp_ip, ssrc);
     Server::instance()->AddRequest(req_ptr);
     resp->json["code"] = 0; // 鉴权成功
     resp->json["data"]["device"] = device_id;
@@ -678,9 +680,9 @@ int XHttpServer::on_stream_changed(HttpRequest* req, HttpResponse* resp)
             char publish_url[1024] = {0};
             snprintf(publish_url, 1024,
             "http://%s/index/api/startSendRtp?"
-            "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%d&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
-            Server::instance()->GetServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
-            , stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), info_ptr->port, is_udp, pt, use_ps, only_audio
+            "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%d&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d&src_port=%d",
+            Server::instance()->GetMediaServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
+            , stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), info_ptr->port, is_udp, pt, use_ps, only_audio, 51000
             //, stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), 10000, is_udp, pt, use_ps, only_audio
             //, stream_id.c_str(), stream_id.c_str(),"10.23.132.27", 10000, is_udp, pt, use_ps, only_audio
             );

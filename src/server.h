@@ -46,6 +46,7 @@ public:
     bool Init(const std::string& conf_path);
     bool SetServerInfo(const std::string& json_str);
     inline ServerInfo GetServerInfo() { return s_info_; }
+    inline MediaServerInfo GetMediaServerInfo() { return media_server_info_; }
     inline struct eXosip_t* GetSipContext() { return sip_context_; }
 
     bool Start();
@@ -97,6 +98,10 @@ public:
     */
     void AddPublishStreamInfo(const std::string& ssrc, int cid, int did);
     void DelPublishStreamInfo(const std::string& ssrc);
+    // 获取对讲的流服务器端口
+    short GetTalkPort();
+    // 回收释放对讲的流服务器端口
+    void ReleaseTalkPort(short port);
 
 public:
     static HandlerPtr kDefaultHandler;
@@ -130,6 +135,7 @@ public:
 private:
     std::atomic_bool is_quit_;
     ServerInfo s_info_;
+    MediaServerInfo media_server_info_;
     struct eXosip_t *sip_context_;
     std::thread thread_;
     std::unordered_map<eXosip_event_type, HandlerPtr> event_map_; // 注册的事件处理函数体
@@ -152,6 +158,8 @@ private:
 
     B_Lock publish_streams_mutext_;
     std::unordered_map<std::string, std::pair<int, int>> publish_streams_;   // 正在推流直播的rtsp, <ssrc, <cid, did>>
+    std::mutex talk_mutex_;
+    std::queue<short> talk_ports_;
 };
 #define gServer Server::instance()
 };

@@ -55,7 +55,11 @@ bool Server::Init(const std::string& conf_path)
         std::cerr << "json parse error!" << std::endl;
         return false;
     }
-
+    // 分配流服务器对话端口
+    int i = media_server_info_.rtp_proxy_port_min;
+    for (; i <= media_server_info_.rtp_proxy_port_max; i++) {
+        talk_ports_.push(i);
+    }
     // 注册msg回调响应函数
     BEGIN_REGISTER_MSG_RESPONSE(msg_response_)
         REGISTER_MSG_RESPONSE("Catalog", &Handler::response_catalog, kDefaultHandler)
@@ -78,13 +82,17 @@ bool Server::SetServerInfo(const std::string& json_str)
     JSON_VALUE_REQUIRE_STRING(sip_config, "nonce", s_info_.nonce);
     JSON_VALUE_REQUIRE_STRING(sip_config, "ip", s_info_.ip);
     JSON_VALUE_REQUIRE_INT(sip_config, "port", s_info_.port);
-    JSON_VALUE_REQUIRE_STRING(sip_config, "rtp_ip", s_info_.rtp_ip);
-    JSON_VALUE_REQUIRE_INT(sip_config, "rtpPort", s_info_.rtp_port);
     JSON_VALUE_REQUIRE_STRING(sip_config, "sipId", s_info_.sip_id);
     JSON_VALUE_REQUIRE_STRING(sip_config, "sipRealm", s_info_.realm);
     JSON_VALUE_REQUIRE_STRING(sip_config, "sipPass", s_info_.passwd);
     JSON_VALUE_REQUIRE_INT(sip_config, "sipTimeout", s_info_.timeout);
     JSON_VALUE_REQUIRE_INT(sip_config, "sipExpiry", s_info_.valid_time);
+
+    auto& media_server_config = doc["media_server_config"];
+    JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_ip", media_server_info_.rtp_ip);
+    JSON_VALUE_REQUIRE_INT(media_server_config, "rtpPort", media_server_info_.rtp_port);
+    JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_min", media_server_info_.rtp_proxy_port_min);
+    JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_max", media_server_info_.rtp_proxy_port_max);
     return true;
 }
 
@@ -392,6 +400,27 @@ void Server::DelPublishStreamInfo(const std::string& ssrc)
     if (publish_streams_.count(ssrc) > 0) {
         publish_streams_.erase(ssrc);
     }
+}
+
+short Server::GetTalkPort()
+{
+    short port = 0;
+    std::lock_guard<std::mutex> _lock(talk_mutex_);
+    if (!talk_ports_.empty()) {
+        short port = talk_ports_.front();
+        talk_ports_.pop();
+    }
+    return port;
+}
+
+void Server::ReleaseTalkPort(short port)
+{
+    if (port < media_server_info_.rtp_proxy_port_min
+    || port > media_server_info_.rtp_proxy_port_max) {
+        return;
+    }
+    std::lock_guard<std::mutex> _lock(talk_mutex_);
+    talk_ports_.push(port);
 }
 
 bool Server::run()

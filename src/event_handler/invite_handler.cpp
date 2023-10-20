@@ -5,6 +5,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <chrono>
 #include <memory>
+#include <osipparser2/headers/osip_header.h>
 #include <osipparser2/headers/osip_via.h>
 #include <osipparser2/sdp_message.h>
 #include <ostream>
@@ -57,11 +58,14 @@ namespace Xzm
         std::string client_ip, str_port, username, session_id, session_ver, str_proto, media_type;
         ClientPtr client_ptr = nullptr;
         do {
+            auto s_info = Server::instance()->GetServerInfo();
             sdp_message_init(&sdp_msg);
             sdp_message_parse(sdp_msg, body->body);
             client_ip = sdp_message_o_addr_get(sdp_msg);
+            //client_ip = s_info.rtp_ip;
             str_port = sdp_message_m_port_get(sdp_msg, 0);
             username = sdp_message_o_username_get(sdp_msg);
+            //username = s_info.sip_id;
             session_id = sdp_message_o_sess_id_get(sdp_msg);
             session_ver = sdp_message_o_sess_version_get(sdp_msg);
             str_proto = sdp_message_m_proto_get(sdp_msg, 0);
@@ -91,7 +95,13 @@ namespace Xzm
                 LOGE("InviteHandler:eXosip_call_build_ack failed!");
                 break;
             }
+            short talk_port = Server::instance()->GetTalkPort();
+            if (talk_port <= 0) {
+                LOGE("can not get port for mediakit to speek");
+                break;
+            }
             //int ret = eXosip_call_build_request(sip_context_, evtp->did, "INVITE", &msg);
+            auto media_info = Server::instance()->GetMediaServerInfo();
             // 构建消息体
             char sdp[2048] = {0};
             {
@@ -101,15 +111,15 @@ namespace Xzm
                 "s=Play\r\n"
                 "c=IN IP4 %s\r\n"
                 "t=0 0\r\n"
-                "m=%s %s %s 8 96\r\n"
+                "m=%s %d %s 8 96\r\n"
                 "a=sendonly\r\n"
                 "a=rtpmap:8 PCMA/8000\r\n"
                 "a=rtpmap:96 PS/90000\r\n"
                 //"a=setup:passive\r\n"
                 //"a=connection:new\r\n"
                 "y=%s\r\n"
-                "f=v/////a/1/8/1\r\n", username.c_str(),client_ip.c_str(), client_ip.c_str(),
-                media_type.c_str(), str_port.c_str(), str_proto.c_str(), ssrc.c_str());
+                "f=v/////a/1/8/1\r\n", s_info.sip_id.c_str(), media_info.rtp_ip.c_str(), media_info.rtp_ip.c_str(),
+                media_type.c_str(), talk_port, str_proto.c_str(), ssrc.c_str());
                 //"f=\r\n", username.c_str(),client_ip.c_str(), client_ip.c_str(), str_port.c_str(), str_proto.c_str(), ssrc.c_str());
             }
             osip_message_set_body(msg, sdp, strlen(sdp));

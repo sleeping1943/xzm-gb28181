@@ -203,6 +203,7 @@ int Handler::request_invite(eXosip_t *sip_context, ClientRequestPtr req)
         在http请求推流时就确定rtsp推流地址
     */
     auto s_info = Server::instance()->GetServerInfo();
+    auto media_info = Server::instance()->GetMediaServerInfo();
     //client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     //auto ssrc = Xzm::util::convert10to16(client->ssrc);
     //client->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
@@ -226,7 +227,7 @@ int Handler::request_invite(eXosip_t *sip_context, ClientRequestPtr req)
               //"a=setup:passive\r\n"
               //"a=connection:new\r\n"
               "y=%s\r\n"
-              "f=\r\n", client->real_device_id.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
+              "f=\r\n", client->real_device_id.c_str(),media_info.rtp_ip.c_str(), media_info.rtp_ip.c_str(), media_info.rtp_port, client->ssrc.c_str());
               //"y=0100000001\r\n"
               //"f=\r\n", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port);
 
@@ -262,11 +263,12 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientRequestPtr req)
     char sdp[2048] = {0};
     char head[1024] = {0};
     ClientPtr client = req->client_ptr;
+    auto media_info = Server::instance()->GetMediaServerInfo();
 
     auto s_info = Server::instance()->GetServerInfo();
     client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client->ssrc);
-    client->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
+    client->rtsp_url = Xzm::util::get_rtsp_addr(media_info.rtp_ip, ssrc);
     
     CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
@@ -301,7 +303,7 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientRequestPtr req)
               //"a=setup:passive\r\n" // TCP被动模式
               //"a=connection:new\r\n"    // 每次新建连接
               "y=%s\r\n"
-              "f=v/////a/1/8/1\r\n", client->device.c_str(),s_info.rtp_ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port, client->ssrc.c_str());
+              "f=v/////a/1/8/1\r\n", client->device.c_str(),media_info.rtp_ip.c_str(), media_info.rtp_ip.c_str(), media_info.rtp_port, client->ssrc.c_str());
               //"y=0100000001\r\n"
               //"f=\r\n", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.rtp_ip.c_str(), s_info.rtp_port);
              // f字段说明:v/编码格式/分辨率/帧率/码率类型/码率大小a/编码格式/码率大小/采样率
@@ -407,6 +409,7 @@ int Handler::request_invite_playback(eXosip_t *sip_context, ClientRequestPtr req
     }
     ClientPtr client = req->client_ptr;
     auto s_info = Server::instance()->GetServerInfo();
+    auto media_info = Server::instance()->GetMediaServerInfo();
 
     CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
@@ -430,12 +433,12 @@ int Handler::request_invite_playback(eXosip_t *sip_context, ClientRequestPtr req
               "y=%s\r\n"
               "f=\r\n"
               , client->real_device_id.c_str()
-              , s_info.rtp_ip.c_str()
+              , media_info.rtp_ip.c_str()
               , client->real_device_id.c_str()
-              , s_info.rtp_ip.c_str()
+              , media_info.rtp_ip.c_str()
               , param_ptr->start_time
               , param_ptr->end_time
-              , s_info.rtp_port
+              , media_info.rtp_port
               , client->ssrc.c_str());
     int ret = eXosip_call_build_initial_invite(sip_context, &msg, to, from,  nullptr, nullptr);
     if (ret) {
