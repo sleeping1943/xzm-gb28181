@@ -56,7 +56,7 @@ bool Server::Init(const std::string& conf_path)
         return false;
     }
     // 分配流服务器对话端口
-    int i = media_server_info_.rtp_proxy_port_min;
+    unsigned short i = media_server_info_.rtp_proxy_port_min;
     for (; i <= media_server_info_.rtp_proxy_port_max; i++) {
         talk_ports_.push(i);
     }
@@ -89,7 +89,7 @@ bool Server::SetServerInfo(const std::string& json_str)
     JSON_VALUE_REQUIRE_INT(sip_config, "sipExpiry", s_info_.valid_time);
 
     auto& media_server_config = doc["media_server_config"];
-    JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_ip", media_server_info_.rtp_ip);
+    JSON_VALUE_REQUIRE_STRING(media_server_config, "rtp_ip", media_server_info_.rtp_ip);
     JSON_VALUE_REQUIRE_INT(media_server_config, "rtpPort", media_server_info_.rtp_port);
     JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_min", media_server_info_.rtp_proxy_port_min);
     JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_max", media_server_info_.rtp_proxy_port_max);
@@ -367,6 +367,25 @@ void Server::DelLivingInfoPtr(const std::string& stream_id)
 {
     WriteLock _lock(living_info_mutex_);
     if (living_info_map_.count(stream_id) > 0) {
+        auto living_ptr = living_info_map_[stream_id];
+        switch (living_ptr->living_type) {
+            case kLivingTypeVideo:
+            break;
+            case kLivingTypeAudio:
+            break;
+            case kLivingTypeTalkAudio:
+                if (living_ptr->talk_port >= media_server_info_.rtp_proxy_port_min
+                && living_ptr->talk_port <= media_server_info_.rtp_proxy_port_max) {
+                    ReleaseTalkPort(living_ptr->talk_port);
+                } else {
+                    LOGE("can not release talk_port[%d]", living_ptr->talk_port);
+                }
+            break;
+            case kLivingTypeMax:
+            case kLivingTypeNone:
+            default:
+            break;
+        }
         living_info_map_.erase(stream_id);
     }
     return;
@@ -402,12 +421,12 @@ void Server::DelPublishStreamInfo(const std::string& ssrc)
     }
 }
 
-short Server::GetTalkPort()
+unsigned short Server::GetTalkPort()
 {
-    short port = 0;
+    unsigned short port = 0;
     std::lock_guard<std::mutex> _lock(talk_mutex_);
     if (!talk_ports_.empty()) {
-        short port = talk_ports_.front();
+        port = talk_ports_.front();
         talk_ports_.pop();
     }
     return port;

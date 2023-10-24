@@ -99,7 +99,7 @@ public:
     void AddPublishStreamInfo(const std::string& ssrc, int cid, int did);
     void DelPublishStreamInfo(const std::string& ssrc);
     // 获取对讲的流服务器端口
-    short GetTalkPort();
+    unsigned short GetTalkPort();
     // 回收释放对讲的流服务器端口
     void ReleaseTalkPort(short port);
 
@@ -159,7 +159,7 @@ private:
     B_Lock publish_streams_mutext_;
     std::unordered_map<std::string, std::pair<int, int>> publish_streams_;   // 正在推流直播的rtsp, <ssrc, <cid, did>>
     std::mutex talk_mutex_;
-    std::queue<short> talk_ports_;
+    std::queue<unsigned short> talk_ports_;
 };
 #define gServer Server::instance()
 };

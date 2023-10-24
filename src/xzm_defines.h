@@ -194,12 +194,24 @@ const static std::unordered_map<std::string, XClientType> kRegistedClientType = 
 {"IP Camera", kClientIPC },
 };
 
+/* 实时流类型 */
+enum LivingType
+{
+    kLivingTypeNone = 0,    // 未知
+    kLivingTypeVideo,       // 视频流,包含音频流,用于前端观看
+    kLivingTypeAudio,       // 音频流
+    kLivingTypeTalkAudio,   // 对讲音频流
+    kLivingTypeMax,
+};
+
 /* 实时流信息 */
 struct LivingInfo
 {
     std::string stream_id;
     std::string ip;
-    short port;
+    unsigned short port;
+    unsigned short talk_port;   // 流媒体服务用于推流的端口
+    LivingType living_type;
 };
 using LivingInfoPtr = std::shared_ptr<LivingInfo>;
 using LivingInfoMap = std::map<std::string, LivingInfoPtr>;

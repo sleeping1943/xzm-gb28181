@@ -682,7 +682,7 @@ int XHttpServer::on_stream_changed(HttpRequest* req, HttpResponse* resp)
             "http://%s/index/api/startSendRtp?"
             "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%d&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d&src_port=%d",
             Server::instance()->GetMediaServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
-            , stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), info_ptr->port, is_udp, pt, use_ps, only_audio, 51000
+            , stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), info_ptr->port, is_udp, pt, use_ps, only_audio, info_ptr->talk_port
             //, stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), 10000, is_udp, pt, use_ps, only_audio
             //, stream_id.c_str(), stream_id.c_str(),"10.23.132.27", 10000, is_udp, pt, use_ps, only_audio
             );

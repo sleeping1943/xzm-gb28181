@@ -53,7 +53,7 @@ namespace Xzm
                 CLOGI(YELLOW, "ssrc :%s", ssrc.c_str());
             }
         }
-
+        unsigned short talk_port = 0;
         sdp_message_t *sdp_msg = nullptr;
         std::string client_ip, str_port, username, session_id, session_ver, str_proto, media_type;
         ClientPtr client_ptr = nullptr;
@@ -95,7 +95,7 @@ namespace Xzm
                 LOGE("InviteHandler:eXosip_call_build_ack failed!");
                 break;
             }
-            short talk_port = Server::instance()->GetTalkPort();
+            talk_port = Server::instance()->GetTalkPort();
             if (talk_port <= 0) {
                 LOGE("can not get port for mediakit to speek");
                 break;
@@ -162,12 +162,14 @@ namespace Xzm
             return false;
         }
     #endif
-        client_ptr->talk_thread = std::thread([client_ip, str_port, ser_port, client_ptr, str_app, stream_id]() {
+        client_ptr->talk_thread = std::thread([client_ip, str_port, talk_port, client_ptr, str_app, stream_id]() {
             client_ptr->is_talking.store(true);
             LivingInfoPtr info_ptr = std::make_shared<LivingInfo>();
             info_ptr->ip = client_ip;
             info_ptr->port = std::stoi(str_port);
             info_ptr->stream_id = stream_id;
+            info_ptr->talk_port = talk_port;
+            info_ptr->living_type = kLivingTypeTalkAudio;
             Server::instance()->AddLivingInfoPtr(stream_id, info_ptr);
 
             char cmd[256] = {0};
@@ -176,7 +178,8 @@ namespace Xzm
     #else
             snprintf(cmd, 256,
              "ffmpeg -re -stream_loop -1 -i \"./1.mp4\"" \
-            " -vn -acodec copy -f rtsp rtsp://10.23.132.27:554/%s/%s"
+            //" -vn -acodec copy -f rtsp rtsp://10.23.132.27:554/%s/%s"
+            " -vn -acodec pcm_alaw -ac 1 -ar 8000 -f rtsp rtsp://10.23.132.27:554/%s/%s"
             , str_app.c_str(), stream_id.c_str());
     #endif
             CLOGE(BLUE, "publish_cmd:%s", cmd);
