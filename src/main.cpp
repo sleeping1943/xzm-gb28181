@@ -6,6 +6,7 @@
 #include "utils/helper.h"
 #include <signal.h>
 #include "utils/log.h"
+#include "utils/md5.h"
 #include "http/http_server.h"
 #include "xzm_defines.h"
 #include "deleter.h"

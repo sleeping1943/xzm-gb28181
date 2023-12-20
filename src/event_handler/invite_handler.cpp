@@ -3,7 +3,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.h>
 #include <boost/algorithm/string/regex.hpp>
+#include <cctype>
 #include <chrono>
+#include <iterator>
 #include <memory>
 #include <osipparser2/headers/osip_header.h>
 #include <osipparser2/headers/osip_via.h>
@@ -14,6 +16,7 @@
 #include <stdlib.h>
 #include <thread>
 #include "../utils/helper.h"
+#include "../utils/md5.h"
 
 namespace Xzm
 {
@@ -35,7 +38,9 @@ namespace Xzm
         osip_message_get_body(evtp->request, 0, &body);
         std::string str_body(body->body);
         std::vector<std::string> str_vec;
-        std::string ssrc;
+        unsigned char md5_buf[16] = {0};
+        std::string ssrc, client_ssrc;
+        #if 1
         if (!str_body.empty()) {
             boost::split_regex(str_vec, str_body, boost::regex("\r\n"));
             for (auto& str : str_vec) {
@@ -53,6 +58,7 @@ namespace Xzm
                 CLOGI(YELLOW, "ssrc :%s", ssrc.c_str());
             }
         }
+        #endif
         unsigned short talk_port = 0;
         sdp_message_t *sdp_msg = nullptr;
         std::string client_ip, str_port, username, session_id, session_ver, str_proto, media_type;
@@ -72,7 +78,7 @@ namespace Xzm
             media_type = sdp_message_m_media_get(sdp_msg, 0);
 
             printf("\nclient_ip:%s\tusername:%s\tsession_id:%s\tsession_ver:%s\tstr_port:%s\tstr_proto:%s\tmedia_type:%s\n" 
-             ,client_ip.c_str(), username.c_str(), session_id.c_str(), session_ver.c_str(), str_port.c_str(), str_port.c_str(), media_type.c_str());
+             ,client_ip.c_str(), username.c_str(), session_id.c_str(), session_ver.c_str(), str_port.c_str(), str_proto.c_str(), media_type.c_str());
             dump_request(evtp);
             dump_response(evtp);
             // 找到对应的client
@@ -100,6 +106,12 @@ namespace Xzm
                 LOGE("can not get port for mediakit to speek");
                 break;
             }
+            auto md5_str = Xzm::MD5(username).toStr();
+            std::transform(md5_str.begin(), md5_str.end(), md5_str.begin(), [](const char& c) {
+                return std::toupper(c);
+            });
+            //ssrc = std::string(md5_buf);
+            client_ssrc = md5_str.substr(md5_str.length() - 8);
             //int ret = eXosip_call_build_request(sip_context_, evtp->did, "INVITE", &msg);
             auto media_info = Server::instance()->GetMediaServerInfo();
             // 构建消息体
@@ -114,7 +126,7 @@ namespace Xzm
                 "m=%s %d %s 8 96\r\n"
                 "a=sendonly\r\n"
                 "a=rtpmap:8 PCMA/8000\r\n"
-                "a=rtpmap:96 PS/90000\r\n"
+                //"a=rtpmap:96 PS/90000\r\n"
                 //"a=setup:passive\r\n"
                 //"a=connection:new\r\n"
                 "y=%s\r\n"
@@ -147,57 +159,17 @@ namespace Xzm
         std::string secret = "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
         std::string stream_id = TALK_PREFIX;
         std::string str_app = "rtp";
-        stream_id += Xzm::util::convert10to16(ssrc);
-    //#define PUBLISH_GB28181
-    #ifdef PUBLISH_GB28181
-        char sz_url[256] = {0};
-        snprintf(sz_url, 256,
-         "http://%s/index/api/openRtpServer?secret=%s&port=%d&tcp_mode=%d&stream_id=%s",
-        Server::instance()->GetServerInfo().rtp_ip.c_str(), secret.c_str(), 0, 0, stream_id.c_str());
-        auto resp = requests::get(sz_url);
-        auto ret_json = resp->GetJson();
-        HV_JSON_GET_INT(ret_json, ret_code, "code");
-        HV_JSON_GET_INT(ret_json, ser_port, "port");
-        if (ret_code != 0) {
-            return false;
-        }
-    #endif
-        client_ptr->talk_thread = std::thread([client_ip, str_port, talk_port, client_ptr, str_app, stream_id]() {
-            client_ptr->is_talking.store(true);
-            LivingInfoPtr info_ptr = std::make_shared<LivingInfo>();
-            info_ptr->ip = client_ip;
-            info_ptr->port = std::stoi(str_port);
-            info_ptr->stream_id = stream_id;
-            info_ptr->talk_port = talk_port;
-            info_ptr->living_type = kLivingTypeTalkAudio;
-            Server::instance()->AddLivingInfoPtr(stream_id, info_ptr);
-
-            char cmd[256] = {0};
-    #ifdef PUBLISH_GB28181
-            snprintf(cmd, 256, "ffmpeg.exe -re -stream_loop -1 -i \"./1.mp4\" -vcodec h264 -acodec aac -f rtp_mpegts rtp://10.23.132.27:%d");
-    #else
-            snprintf(cmd, 256,
-             "ffmpeg -re -stream_loop -1 -i \"./1.mp4\"" \
-            //" -vn -acodec copy -f rtsp rtsp://10.23.132.27:554/%s/%s"
-            " -vn -acodec pcm_alaw -ac 1 -ar 8000 -f rtsp rtsp://10.23.132.27:554/%s/%s"
-            , str_app.c_str(), stream_id.c_str());
-    #endif
-            CLOGE(BLUE, "publish_cmd:%s", cmd);
-            system(cmd);    // 这里会阻塞，需要异步执行，且对话结束后，需要结束推流
-        });
-        client_ptr->talk_thread.detach();
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        
+        stream_id += client_ssrc;
         // 以下推流到摄像头逻辑修改为推流后执行
-        /*
+    #if 1
         int is_udp = 1, pt=8, use_ps=1, only_audio=1;
         char publish_url[1024] = {0};
         snprintf(publish_url, 1024,
          "http://%s/index/api/startSendRtp?"
-         "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%s&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
-         Server::instance()->GetServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
+         "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&src_port=%d&ssrc=%s&dst_url=%s&dst_port=%s&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d",
+         Server::instance()->GetMediaServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
          //, str_app.c_str(), stream_id.c_str(), stream_id.c_str(),"10.23.132.77","8020",/*client_ip.c_str(),str_port.c_str(),* / is_udp, pt, use_ps, only_audio
-         , stream_id.c_str(), stream_id.c_str(),client_ip.c_str(),str_port.c_str(), is_udp, pt, use_ps, only_audio
+         , stream_id.c_str(), talk_port, stream_id.c_str(),client_ip.c_str(),str_port.c_str(), is_udp, pt, use_ps, only_audio
          );
         CLOGI(YELLOW, "url:%s", publish_url);
         auto resp = requests::get(publish_url);
@@ -209,7 +181,7 @@ namespace Xzm
             return false;
         }
         std::cout << "\n----------------------------body:" << resp->body << std::endl;
-        */
+    #endif
         return true;
     }
 };
