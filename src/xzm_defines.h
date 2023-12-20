@@ -24,7 +24,8 @@
 namespace Xzm
 {
 
-#define TALK_PREFIX "talk_"
+//#define TALK_PREFIX "talk_"
+#define TALK_PREFIX ""
 /* 国标信令注册 */
 #define BEGIN_REGISTER_EVENT_HANDLER    \
     event_map_ = std::unordered_map<eXosip_event_type, HandlerPtr>{
@@ -309,6 +310,7 @@ using RecordInfoPtr = std::shared_ptr<RecordInfo>;
 struct MediaServerInfo
 {
     std::string rtp_ip;
+    std::string secret;
     unsigned short rtp_port;
     unsigned short rtp_proxy_port_min;
     unsigned short rtp_proxy_port_max;

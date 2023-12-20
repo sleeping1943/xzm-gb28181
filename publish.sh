@@ -11,3 +11,10 @@ ffmpeg.exe -re -stream_loop -1 -i "./1.mp4" -vn -acodec aac -f rtp_mpegts rtp://
 
 # 推流g711的国标音频格式
 ffmpeg -re -stream_loop -1 -i "./1.mp4" -vn -acodec pcm_alaw -ac 1 -ar 8000 -f rtsp rtsp://10.23.132.27:554/rtp/talk_01
+
+# ffmpeg在windows上命令查询输入输出设备
+ffmpeg -list_devices true -f dshow -i dummy 
+
+# ffmpeg采集音频
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec aac -f rtp_mpegts rtp://10.23.132.27:10000
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -f rtp_mpegts rtp://10.23.132.27:10000

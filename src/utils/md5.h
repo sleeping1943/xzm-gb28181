@@ -1,82 +1,136 @@
-﻿/**
+/**
  * @file md5.h
- * @author sleeping (csleeping@163.com)
- * @brief  md5计算
- * @version 0.1
- * @date 2023-08-17
- * 
- * @copyright Copyright (c) 2023
- * 
+ * @The header file of md5.
+ * @author Jiewei Wei
+ * @mail weijieweijerry@163.com
+ * @github https://github.com/JieweiWei
+ * @data Oct 19 2014
+ *
  */
-/* GLOBAL.H - RSAREF types and constants
-*/
-/* PROTOTYPES should be set to one if and only if the compiler supports
-function argument prototyping.
-The following makes PROTOTYPES default to 0 if it has not already been defined with C compiler flags.
-*/
-
 
 #pragma once
 
+/* Parameters of MD5. */
+#define s11 7
+#define s12 12
+#define s13 17
+#define s14 22
+#define s21 5
+#define s22 9
+#define s23 14
+#define s24 20
+#define s31 4
+#define s32 11
+#define s33 16
+#define s34 23
+#define s41 6
+#define s42 10
+#define s43 15
+#define s44 21
+
+/**
+ * @Basic MD5 functions.
+ *
+ * @param there bit32.
+ *
+ * @return one bit32.
+ */
+#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
+#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
+#define H(x, y, z) ((x) ^ (y) ^ (z))
+#define I(x, y, z) ((y) ^ ((x) | (~z)))
+
+/**
+ * @Rotate Left.
+ *
+ * @param {num} the raw number.
+ *
+ * @param {n} rotate left n.
+ *
+ * @return the number after rotated left.
+ */
+#define ROTATELEFT(num, n) (((num) << (n)) | ((num) >> (32-(n))))
+
+/**
+ * @Transformations for rounds 1, 2, 3, and 4.
+ */
+#define FF(a, b, c, d, x, s, ac) { \
+  (a) += F ((b), (c), (d)) + (x) + ac; \
+  (a) = ROTATELEFT ((a), (s)); \
+  (a) += (b); \
+}
+#define GG(a, b, c, d, x, s, ac) { \
+  (a) += G ((b), (c), (d)) + (x) + ac; \
+  (a) = ROTATELEFT ((a), (s)); \
+  (a) += (b); \
+}
+#define HH(a, b, c, d, x, s, ac) { \
+  (a) += H ((b), (c), (d)) + (x) + ac; \
+  (a) = ROTATELEFT ((a), (s)); \
+  (a) += (b); \
+}
+#define II(a, b, c, d, x, s, ac) { \
+  (a) += I ((b), (c), (d)) + (x) + ac; \
+  (a) = ROTATELEFT ((a), (s)); \
+  (a) += (b); \
+}
+
+#include <string>
+#include <cstring>
+
+using std::string;
+
+/* Define of btye.*/
+typedef unsigned char byte;
+/* Define of byte. */
+typedef unsigned int bit32;
+
 namespace Xzm {
-#ifndef PROTOTYPES
-#define PROTOTYPES 0
-#endif
-/* POINTER defines a generic pointer type */
-typedef unsigned char *POINTER;
-/* UINT2 defines a two byte word */
-typedef unsigned short int UINT2;
-/* UINT4 defines a four byte word */
-typedef unsigned long int UINT4;
-/* PROTO_LIST is defined depending on how PROTOTYPES is defined above.
-If using PROTOTYPES, then PROTO_LIST returns the list, otherwise it
-returns an empty list.
-*/
-#if PROTOTYPES
-#define PROTO_LIST(list) list
-#else
-#define PROTO_LIST(list) ()
-#endif
+class MD5 {
+public:
+  /* Construct a MD5 object with a string. */
+  MD5(const string& message);
 
+  /* Generate md5 digest. */
+  const byte* getDigest();
 
+  /* Convert digest to string value */
+  string toStr();
 
-/* MD5.H - header file for MD5C.C
-*/
-/* Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
-rights reserved.
-License to copy and use this software is granted provided that it
-is identified as the "RSA Data Security, Inc. MD5 Message-Digest
-Algorithm" in all material mentioning or referencing this software
-or this function.
-License is also granted to make and use derivative works provided
-that such works are identified as "derived from the RSA Data
-Security, Inc. MD5 Message-Digest Algorithm" in all material
-mentioning or referencing the derived work.
-RSA Data Security, Inc. makes no representations concerning either
-the merchantability of this software or the suitability of this
-software for any particular purpose. It is provided "as is"
-without express or implied warranty of any kind.
-These notices must be retained in any copies of any part of this
-documentation and/or software.
-*/
-/* MD5 context. */
+private:
+  /* Initialization the md5 object, processing another message block,
+   * and updating the context.*/
+  void init(const byte* input, size_t len);
 
+  /* MD5 basic transformation. Transforms state based on block. */
+  void transform(const byte block[64]);
 
-typedef struct {
-	UINT4 state[4]; /* state (ABCD) */
-	UINT4 count[2]; /* number of bits, modulo 2^64 (lsb first) */
-	unsigned char buffer[64]; /* input buffer */
-} MD5_CTX;
+  /* Encodes input (usigned long) into output (byte). */
+  void encode(const bit32* input, byte* output, size_t length);
 
-#if 0
-void MD5Init PROTO_LIST ((MD5_CTX *));
-void MD5Update PROTO_LIST
-	((MD5_CTX *, unsigned char *, unsigned int));
-void MD5Final PROTO_LIST ((unsigned char [16], MD5_CTX *));
-#endif
+  /* Decodes input (byte) into output (usigned long). */
+  void decode(const byte* input, bit32* output, size_t length);
 
-void MD5Init(MD5_CTX *);
-void MD5Update(MD5_CTX *, unsigned char *, unsigned int);
-void MD5Final(unsigned char [16], MD5_CTX *);
+private:
+  /* Flag for mark whether calculate finished. */
+  bool finished;
 
+	/* state (ABCD). */
+  bit32 state[4];
+
+  /* number of bits, low-order word first. */
+  bit32 count[2];
+
+  /* input buffer. */
+  byte buffer[64];
+
+  /* message digest. */
+  byte digest[16];
+
+	/* padding for calculate. */
+  static const byte PADDING[64];
+
+  /* Hex numbers. */
+  static const char HEX_NUMBERS[16];
+};
 };

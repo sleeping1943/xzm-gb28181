@@ -2,7 +2,13 @@ add_rules("mode.debug", "mode.release")
 
 target("gb28181-server")
     set_kind("binary")
-    add_files("src/*.cpp","src/event_handler/**.cpp", "src/http/**.cpp", "src/utils/**.cpp", "src/msg_builder/**.cpp")
+    add_files(
+        "src/*.cpp",
+        "src/event_handler/**.cpp",
+        "src/http/**.cpp",
+        "src/utils/**.cpp",
+        "src/msg_builder/**.cpp"
+    )
     set_languages("c++11")
 
     set_targetdir("./")
