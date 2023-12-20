@@ -222,7 +222,9 @@ struct StreamInfo
 {
     std::string ip;
     short port;
+    std::string stream_id;
 };
+using StreamInfoPtr = std::shared_ptr<StreamInfo>;
 
 /* xml消息的查询参数信息 */
 class XmlQueryParam

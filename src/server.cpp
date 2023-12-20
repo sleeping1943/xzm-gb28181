@@ -90,6 +90,7 @@ bool Server::SetServerInfo(const std::string& json_str)
 
     auto& media_server_config = doc["media_server_config"];
     JSON_VALUE_REQUIRE_STRING(media_server_config, "rtp_ip", media_server_info_.rtp_ip);
+    JSON_VALUE_REQUIRE_STRING(media_server_config, "secret", media_server_info_.secret);
     JSON_VALUE_REQUIRE_INT(media_server_config, "rtpPort", media_server_info_.rtp_port);
     JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_min", media_server_info_.rtp_proxy_port_min);
     JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_max", media_server_info_.rtp_proxy_port_max);
@@ -397,6 +398,41 @@ void Server::CleanLivingInfos()
     living_info_map_.clear();
 }
 
+
+void Server::AddStream(const std::string& stream_id, StreamInfoPtr info_ptr)
+{
+    WriteLock _lock(valid_stream_mutex_);
+    if (stream_infos_.count(stream_id) > 0) {
+        stream_infos_.erase(stream_id);
+    }
+    stream_infos_[stream_id] = info_ptr;
+}
+
+StreamInfoPtr Server::GetStreamInfo(const std::string& stream_id)
+{
+    ReadLock _lock(valid_stream_mutex_);
+    if (stream_infos_.count(stream_id) <= 0) {
+        return nullptr;
+    }
+    return stream_infos_[stream_id];
+}
+bool Server::IsStreamValid(const std::string& stream_id)
+{
+    ReadLock _lock(valid_stream_mutex_);
+    if (stream_infos_.count(stream_id) > 0) {
+        return true;
+    }
+    return false;
+}
+
+void Server::DelStream(const std::string& stream_id)
+{
+    WriteLock _lock(valid_stream_mutex_);
+    if (stream_infos_.count(stream_id) <= 0) {
+        return;
+    }
+    stream_infos_.erase(stream_id);
+}
 
 std::pair<int, int> Server::FindPublishStreamInfo(const std::string& ssrc)
 {

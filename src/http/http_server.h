@@ -144,6 +144,23 @@ private:
      */
     int fast_forward_playback(HttpRequest* req, HttpResponse* resp);
 
+    /**
+     * @brief 判断指定流是否存在
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int check_stream(HttpRequest* req, HttpResponse* resp);
+
+    /**
+     * @brief 获取指定流信息
+     * 
+     * @param req 
+     * @param resp 
+     * @return int 
+     */
+    int get_rtp_info(HttpRequest* req, HttpResponse* resp);
     /************************以下接口为zlmediakit回调函数****************************/
     /**
      * @brief 国标设备开始推送的回调及鉴权函数

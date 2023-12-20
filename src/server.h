@@ -87,6 +87,11 @@ public:
     void DelLivingInfoPtr(const std::string& stream_id);
     void CleanLivingInfos();
 
+    void AddStream(const std::string& stream_id, StreamInfoPtr info_ptr);
+    StreamInfoPtr GetStreamInfo(const std::string& stream_id);
+    bool IsStreamValid(const std::string& stream_id);
+    void DelStream(const std::string& stream_id);
+
     std::pair<int, int> FindPublishStreamInfo(const std::string& ssrc);
 
     /**
@@ -130,7 +135,7 @@ private:
 public:
     static std::atomic_bool is_server_quit;
     static std::atomic_bool is_client_all_quit;
-    static std::unordered_map<std::string, StreamInfo> stream_infos_;   // <stream_id, StreamInfo>,stream_id以"talk_"开头
+    //static std::unordered_map<std::string, StreamInfo> stream_infos_;   // <stream_id, StreamInfo>,stream_id以"talk_"开头
 
 private:
     std::atomic_bool is_quit_;
@@ -160,6 +165,11 @@ private:
     std::unordered_map<std::string, std::pair<int, int>> publish_streams_;   // 正在推流直播的rtsp, <ssrc, <cid, did>>
     std::mutex talk_mutex_;
     std::queue<unsigned short> talk_ports_;
+
+
+    B_Lock valid_stream_mutex_;
+    std::mutex stream_mtx_;
+    std::unordered_map<std::string, StreamInfoPtr> stream_infos_;  // <stream_id, stream_info>
 };
 #define gServer Server::instance()
 };

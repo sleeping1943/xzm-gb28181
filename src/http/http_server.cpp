@@ -62,6 +62,7 @@ bool XHttpServer::Init(const std::string& conf_path)
         HV_REGISTER_SYNC_HANDLER(router, GET, "/refresh_device_library", XHttpServer, refresh_device_library, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/start_playback", XHttpServer, start_playback, this);
         HV_REGISTER_SYNC_HANDLER(router, GET, "/fast_forward_playback", XHttpServer, fast_forward_playback, this);
+        HV_REGISTER_SYNC_HANDLER(router, GET, "/check_stream", XHttpServer, check_stream, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_publish", XHttpServer, on_publish, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_play", XHttpServer, on_play, this);
         HV_REGISTER_SYNC_HANDLER(router, POST, "/on_stream_changed", XHttpServer, on_stream_changed, this);
@@ -579,6 +580,83 @@ int XHttpServer::fast_forward_playback(HttpRequest* req, HttpResponse* resp)
     return kHttpOK;
 }
 
+int XHttpServer::check_stream(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "can not find param device_id!"));
+    }
+    std::string ssrc = req->GetParam("ssrc");
+    if (ssrc.empty()) {
+        return resp->String(get_simple_info(400, "can not find param ssrc!"));
+    }
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(400, "can not find the device client"));
+    }
+    bool exist = Server::instance()->IsStreamValid(ssrc);
+    resp->json["code"] = 0; // 鉴权成功
+    resp->json["data"]["code"] = device_id;
+    resp->json["data"]["stream_id"] = ssrc;
+    resp->json["data"]["exist"] = exist;
+    resp->json["msg"] = "success";
+    return kHttpOK;
+
+}
+
+int XHttpServer::get_rtp_info(HttpRequest* req, HttpResponse* resp)
+{
+    std::string device_id = req->GetParam("device_id");
+    if (device_id.empty()) {
+        return resp->String(get_simple_info(400, "can not find param device_id!"));
+    }
+    std::string ssrc = req->GetParam("ssrc");
+    if (ssrc.empty()) {
+        return resp->String(get_simple_info(400, "can not find param ssrc!"));
+    }
+    auto client_ptr = Server::instance()->FindClientEx(device_id);
+    if (!client_ptr) {
+        return resp->String(get_simple_info(400, "can not find the device client"));
+    }
+    // 向流服务器查询
+    auto media_ptr = Xzm::Server::instance()->GetMediaServerInfo();
+    std::stringstream ss;
+    ss << "http://" << media_ptr.rtp_ip
+        << "/index/api/getRtpInfo?secret=" << media_ptr.secret
+        << "&stream_id=" << ssrc;
+    std::string url = ss.str();
+    auto resp_check = requests::get(url.c_str());
+    int code = 0;
+    bool exist = false;
+    std::string peer_ip, local_ip;
+    int peer_port = 0, local_port = 0;
+
+    if (resp_check) {
+        auto ret_json = resp_check->GetJson();
+        HV_JSON_GET_INT(ret_json, code, "code");
+        HV_JSON_GET_BOOL(ret_json, exist, "exist");
+        HV_JSON_GET_INT(ret_json, peer_port, "peer_port");
+        HV_JSON_GET_INT(ret_json, local_port, "local_port");
+        HV_JSON_GET_STRING(ret_json, peer_ip, "peer_ip");
+        HV_JSON_GET_STRING(ret_json, local_ip, "local_ip");
+    }
+    if (code != 0 || !exist) {
+        LOGE("--------------------check_stream failed!,code:%d exist:%d", code, (exist ? 1 : 0));
+        //return false;
+    }
+    resp->json["code"] = 0; // 鉴权成功
+    resp->json["data"]["code"] = device_id;
+    resp->json["data"]["exist"] = exist;
+    resp->json["data"]["peer_ip"] = peer_ip;
+    resp->json["data"]["peer_port"] = peer_port;
+    resp->json["data"]["local_ip"] = local_ip;
+    resp->json["data"]["local_port"] = local_port;
+    resp->json["data"]["exist"] = exist;
+    resp->json["msg"] = "success";
+    return kHttpOK;
+
+}
+
 int XHttpServer::on_publish(HttpRequest* req, HttpResponse* resp)
 {
     CLOGI(CYAN, "http on publish!!!-------------------------------------------------------------------");
@@ -662,9 +740,13 @@ int XHttpServer::on_stream_changed(HttpRequest* req, HttpResponse* resp)
     std::string stream_id;  // 流id
     HV_JSON_GET_BOOL(obj_json, is_regist, "regist");
     HV_JSON_GET_STRING(obj_json, stream_id, "stream");
+    auto server = Server::instance();
     do {
         if (is_regist) {    // 有数据流注册
-            auto info_ptr = Server::instance()->FindLivingInfoPtr(stream_id);
+            StreamInfoPtr stream_info_ptr = std::make_shared<StreamInfo>();
+            stream_info_ptr->stream_id = stream_id;
+            server->AddStream(stream_id, stream_info_ptr);
+            auto info_ptr = server->FindLivingInfoPtr(stream_id);
             if (nullptr == info_ptr) {
                 CLOGI(RED, "\n------------can not find living info_ptr,stream_id[%s]-------------------------\n", stream_id.c_str());
                 break;
@@ -675,33 +757,11 @@ int XHttpServer::on_stream_changed(HttpRequest* req, HttpResponse* resp)
                 std::cout << YELLOW << stream_id << " is already published..." << DEFAULT_COLOR << std::endl;
                 break;
             }
-            Server::instance()->living_states_[stream_id] = true;
-            int is_udp = 1, pt=8, use_ps=1, only_audio=1;
-            char publish_url[1024] = {0};
-            snprintf(publish_url, 1024,
-            "http://%s/index/api/startSendRtp?"
-            "secret=%s&vhost=__defaultVhost__&app=rtp&stream=%s&ssrc=%s&dst_url=%s&dst_port=%d&is_udp=%d&pt=%d&use_ps=%d&only_audio=%d&src_port=%d",
-            Server::instance()->GetMediaServerInfo().rtp_ip.c_str(),"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS"
-            //, stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), info_ptr->port, is_udp, pt, use_ps, only_audio, info_ptr->talk_port
-            //, stream_id.c_str(), stream_id.c_str(),info_ptr->ip.c_str(), 10000, is_udp, pt, use_ps, only_audio
-            , stream_id.c_str(), stream_id.c_str(),"10.23.132.27", 10000, is_udp, pt, use_ps, only_audio
-            );
-            CLOGI(YELLOW, "stream_changed-------------------url:%s", publish_url);
-        #if 1
-            auto resp = requests::get(publish_url);
-            auto ret_json = resp->GetJson();
-            int publish_code = 0;
-            HV_JSON_GET_INT(ret_json, publish_code, "code");
-            if (publish_code != 0) {
-                LOGE("--------------------startSendRtp failed!,code:%d", publish_code);
-                return false;
-            }
-            std::cout << "\n----------------------------body:" << resp->body << std::endl;
-        #endif
-
+            server->living_states_[stream_id] = true;
         } else {    // 有数据流注销
-            Server::instance()->DelLivingInfoPtr(stream_id);
-            Server::instance()->living_states_.erase(stream_id);
+            server->DelStream(stream_id);
+            server->DelLivingInfoPtr(stream_id);
+            server->living_states_.erase(stream_id);
         }
     } while (0);
 
