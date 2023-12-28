@@ -75,7 +75,12 @@ public:
     void dump_response(eXosip_event_t *evtp);
 
     int get_random_sn();
-
+    /**
+     * @brief 生成对讲广播报文
+     * 
+     * @return int 
+     */
+    int generate_borad_cast_xml(char* str_from, char* str_to, char* str_body, ClientInfoPtr client_info_ptr, ClientPtr client);
     void response_catalog(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param);
     void response_recordinfo(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param);
     void response_keepalive(eXosip_event_t *evtp, eXosip_t * sip_context_, int code, std::shared_ptr<boost::any> param);

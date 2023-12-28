@@ -91,6 +91,15 @@ typedef boost::shared_mutex B_Lock;
 typedef boost::unique_lock<B_Lock> WriteLock;
 typedef boost::shared_lock<B_Lock> ReadLock;
 
+/* 摄像头厂商 */
+enum CameraManufacturer
+{
+    kCameraManufacturerNone = 0,    // 未知
+    kCameraManufacturerHik,         // 海康
+    kCameraManufacturerDaHua,       // 大华
+    kCameraManufacturerMax,
+};
+
 enum ChannelType
 {
     kChannelNone = 0,
@@ -373,6 +382,7 @@ struct ClientInfo
     int secrecy = 0;
     int status = 1;
     ChannelType channel_type;
+    CameraManufacturer camera_manufacturer;
 };
 using ClientInfoPtr = std::shared_ptr<ClientInfo>;
 

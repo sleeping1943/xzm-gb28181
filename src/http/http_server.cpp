@@ -187,6 +187,7 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
             rapidjson::Value safety_way(rapidjson::kNumberType);
             rapidjson::Value secrecy(rapidjson::kNumberType);
             rapidjson::Value status(rapidjson::kNumberType);
+            rapidjson::Value camera_manufacturer(rapidjson::kNumberType);
 
             device_id.SetString(client_info->device_id.c_str(), allocator);
             name.SetString(client_info->name.c_str(), allocator);
@@ -201,6 +202,7 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
             safety_way.SetInt(client_info->safety_way);
             secrecy.SetInt(client_info->secrecy);
             status.SetInt(client_info->status);
+            camera_manufacturer.SetInt(client_info->camera_manufacturer);
 
             value.AddMember("device_id", device_id, allocator);
             value.AddMember("name", name, allocator);
@@ -215,6 +217,7 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
             value.AddMember("safety_way", safety_way, allocator);
             value.AddMember("secrecy", secrecy, allocator);
             value.AddMember("status", status, allocator);
+            value.AddMember("camera_manufacturer", camera_manufacturer, allocator);
             arr_client_info.PushBack(value, allocator);
         }
         value.AddMember("channels", arr_client_info, allocator);

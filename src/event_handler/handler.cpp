@@ -484,19 +484,7 @@ int Handler::request_broadcast(eXosip_t *sip_context, ClientRequestPtr req)
     char str_from[512] = {0};
     char str_to[512] = {0};
     char str_body[1024] = {0};
-    auto s_info = Server::instance()->GetServerInfo();
-    sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
-    sprintf(str_to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
-    snprintf(str_body, 1024,
-    "<?xml version=\"1.0\"?>"\
-    "<Notify>"   \
-    "<CmdType>Broadcast</CmdType>"    \
-    "<SN>%d</SN>"  \
-    "<SourceID>%s</SourceID>" \
-    "<TargetID>%s</TargetID>" \
-    "</Notify>", get_random_sn(), s_info.sip_id.c_str(), client_info_ptr->device_id.c_str()
-    );
-
+    generate_borad_cast_xml(str_from, str_to, str_body, client_info_ptr, client);
     osip_message_t *message = nullptr;
     eXosip_message_build_request(sip_context, &message, "MESSAGE", str_to, str_from, nullptr);
     osip_message_set_body(message, str_body, strlen(str_body));
@@ -676,6 +664,7 @@ int Handler::parse_device_xml(const std::string& xml_str)
     const char* temp_text = nullptr;
     do {
         ClientInfoPtr client_info = std::make_shared<ClientInfo>();
+        client_info->camera_manufacturer = kCameraManufacturerNone;
         client_info->device_id = node_device_item->FirstChildElement("DeviceID")->GetText();
         XML_GET_STRING(node_device_item, "Name", client_info->name, temp_node, temp_text);
         XML_GET_STRING(node_device_item, "Manufacturer", client_info->manufacturer, temp_node, temp_text);
@@ -696,10 +685,20 @@ int Handler::parse_device_xml(const std::string& xml_str)
             }
         }
         std::string str_client_type = client_info->model;
-        std::transform(str_client_type.begin(), str_client_type.end(), str_client_type.begin()
-        , [] (unsigned char c) {
+        std::transform(str_client_type.begin(), str_client_type.end(),
+         str_client_type.begin() , [] (unsigned char c) {
                 return std::tolower(c);
             });
+        std::string str_manufacturer = client_info->manufacturer;
+        std::transform(str_manufacturer.begin(), str_manufacturer.end(),
+         str_manufacturer.begin(), [] (unsigned char c) {
+            return std::tolower(c);
+        });
+        if (str_manufacturer.find("hik") != std::string::npos) {
+            client_info->camera_manufacturer = kCameraManufacturerHik;
+        } else if (str_manufacturer.find("dahua") != std::string::npos) {
+            client_info->camera_manufacturer = kCameraManufacturerDaHua;
+        }
         auto s_info = Server::instance()->GetServerInfo();
         client_info->channel_type = kChannelNone;
         do {
@@ -897,5 +896,37 @@ int Handler::get_random_sn()
     std::uniform_int_distribution<int> u(9999, 100000);
     e.seed(time(0));
     return u(e);
+}
+
+int Handler::generate_borad_cast_xml(char* str_from, char* str_to, char* str_body, ClientInfoPtr client_info_ptr, ClientPtr client)
+{
+    auto s_info = Server::instance()->GetServerInfo();
+    sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
+    sprintf(str_to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
+    switch (client_info_ptr->camera_manufacturer) {
+    case kCameraManufacturerDaHua:
+        snprintf(str_body, 1024,
+        "<?xml version=\"1.0\"?>"\
+        "<Notify>"   \
+        "<CmdType>Broadcast</CmdType>"    \
+        "<SN>%d</SN>"  \
+        "<SourceID>%s</SourceID>" \
+        "<TargetID>%s</TargetID>" \
+        "</Notify>", get_random_sn(), s_info.sip_id.c_str(), client_info_ptr->device_id.c_str()
+        );
+        break;
+    case kCameraManufacturerHik:
+    default:
+        snprintf(str_body, 1024,
+        "<?xml version=\"1.0\"?>"\
+        "<Notify>"   \
+        "<CmdType>Broadcast</CmdType>"    \
+        "<SourceID>%s</SourceID>" \
+        "<TargetID>%s</TargetID>" \
+        "</Notify>", s_info.sip_id.c_str(), client_info_ptr->device_id.c_str()
+        );
+        break;
+    }
+    return 0;
 }
 };
