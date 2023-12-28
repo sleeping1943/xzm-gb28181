@@ -18,3 +18,14 @@ ffmpeg -list_devices true -f dshow -i dummy
 # ffmpeg采集音频
 ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec aac -f rtp_mpegts rtp://10.23.132.27:10000
 ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -f rtp_mpegts rtp://10.23.132.27:10000
+# ffmpeg采集音频推流 输出参数: 采样率-8kHz 编码率-64kb/s
+# 推流rtp OK
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec aac -ac 1 -ar 8000 -ab 64000 -f rtp_mpegts rtp://10.23.132.27:10000
+# 推流rtsp OK
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec aac -ac 1 -ar 8000 -ab 64000 -f rtsp rtsp://10.23.132.27:554:/xzm/test01
+# 推流国标流 rtsp,ZLMediakit显示: PCMA[8000/1/16] OK
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec pcm_alaw -ac 1 -ar 8000 -ab 64000 -f rtsp rtsp://10.23.132.27:554:/xzm/test01
+# 推流g711的国标音频格式, ZLMediakit 没有打印,没有流信息 NO
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec pcm_alaw -ac 1 -ar 8000 -ab 64000 -f rtp_mpegts rtp://10.23.132.27:10000
+#  推流rtp音频流到ZLMediakit PCMA[8000Hz 1 channels s16 64kb/s] OK
+ffmpeg -f dshow -i audio="麦克风 (USB 2.0 Camera)" -acodec pcm_alaw -ac 1 -ar 8000 -ab 64000  -f rtp rtp://10.23.132.27:10000

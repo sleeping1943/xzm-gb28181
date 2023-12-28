@@ -123,7 +123,7 @@ namespace Xzm
                 "s=Play\r\n"
                 "c=IN IP4 %s\r\n"
                 "t=0 0\r\n"
-                "m=%s %d %s 8 96\r\n"
+                "m=%s %d %s 8 \r\n"
                 "a=sendonly\r\n"
                 "a=rtpmap:8 PCMA/8000\r\n"
                 //"a=rtpmap:96 PS/90000\r\n"
