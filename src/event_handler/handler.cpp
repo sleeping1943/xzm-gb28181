@@ -491,10 +491,10 @@ int Handler::request_broadcast(eXosip_t *sip_context, ClientRequestPtr req)
     "<?xml version=\"1.0\"?>"\
     "<Notify>"   \
     "<CmdType>Broadcast</CmdType>"    \
-    /*"<SN>248</SN>"  \*/
+    "<SN>%d</SN>"  \
     "<SourceID>%s</SourceID>" \
     "<TargetID>%s</TargetID>" \
-    "</Notify>", s_info.sip_id.c_str(), client_info_ptr->device_id.c_str()
+    "</Notify>", get_random_sn(), s_info.sip_id.c_str(), client_info_ptr->device_id.c_str()
     );
 
     osip_message_t *message = nullptr;
