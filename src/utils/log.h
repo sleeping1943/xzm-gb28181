@@ -38,3 +38,10 @@ static std::string getTime() {
 
 #define LOGI(format, ...)  fprintf(stderr,"\033[32m[INFO]%s [%s:%d %s()] " format "\033[0m\n", getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
 #define LOGE(format, ...)  fprintf(stderr,"\033[31m[ERROR]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
+
+#define LOG_RED(format, ...)  fprintf(stderr,"\033[31m[GB28181]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
+#define LOG_GREEN(format, ...)  fprintf(stderr,"\033[32m[GB28181]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
+#define LOG_YELLOW(format, ...)  fprintf(stderr,"\033[33m[GB28181]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
+#define LOG_BLUE(format, ...)  fprintf(stderr,"\033[34m[GB28181]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
+#define LOG_PERPLE(format, ...)  fprintf(stderr,"\033[35m[GB28181]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)
+#define LOG_CYAN(format, ...)  fprintf(stderr,"\033[36m[GB28181]%s [%s:%d %s()] " format "\033[0m]\n",getTime().data(),__FILE__,__LINE__,__func__ ,##__VA_ARGS__)

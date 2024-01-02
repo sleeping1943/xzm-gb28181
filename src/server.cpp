@@ -510,7 +510,7 @@ bool Server::run()
         }
         eXosip_event_free(evtp);    // 释放事件所占资源
     }
-    
+    LOG_RED("Server ready to exit!");
     //ClearClient();
     return true;
 }

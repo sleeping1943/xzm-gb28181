@@ -82,5 +82,6 @@ void XDeleter::Run()
         }
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
+    LOG_RED("XDeleter ready to exit");
 }
 };

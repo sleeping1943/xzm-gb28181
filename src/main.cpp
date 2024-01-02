@@ -57,6 +57,6 @@ int main(int argc, char** argv)
     // 关闭sip和http服务
     Xzm::Server::instance()->Stop();
     Xzm::XHttpServer::instance()->Stop();
-    CLOGE(RED, "quit server gracefully!!");
+    LOG_RED("quit server gracefully!!");
     return 0;
 }

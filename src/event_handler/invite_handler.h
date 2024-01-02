@@ -20,5 +20,10 @@ public:
     ~InviteHandler();
 
     virtual bool Process(eXosip_event_t *evtp, eXosip_t* sip_context_, int code) override;
+
+private:
+    bool send_meida_data(const SendRtpInfoPtr ptr);
+    std::string parse_ssrc(const std::string& str_body);
+    bool replay_invite(eXosip_event_t *evtp, eXosip_t* sip_context_, osip_body_t *body, SendRtpInfoPtr send_info_ptr);
 };
 };

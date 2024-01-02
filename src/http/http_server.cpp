@@ -100,6 +100,7 @@ bool XHttpServer::Run()
 {
     thread_ = std::thread([this]() {
         http_server_run(&server_);
+        LOG_RED("http server ready to exit!");
     });
     return true;
 }

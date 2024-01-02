@@ -459,4 +459,22 @@ struct ClientRequest
 using ClientRequestPtr = std::shared_ptr<ClientRequest>;
 using RequestQueue = std::queue<ClientRequestPtr>;
 
+// 发送推流参数
+struct SendRtpInfo
+{
+    int is_udp = 1;
+    int pt = 8;
+    int use_ps = 1;
+    int only_audio = 1;
+    unsigned short talk_port;
+    unsigned short client_port;
+    std::string host;
+    std::string app;
+    std::string rtp_ip;
+    std::string stream_id;
+    std::string client_ip;
+    std::string secret;
+    std::string ssrc;
+};
+using SendRtpInfoPtr = std::shared_ptr<SendRtpInfo>;
 };
