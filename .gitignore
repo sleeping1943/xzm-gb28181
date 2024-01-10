@@ -6,6 +6,7 @@ build/*
 .DS_Store
 *.o
 .vscode
+gb28181-server
 gb28181-server.*
 gb28181-client.*
 test-gb28181
