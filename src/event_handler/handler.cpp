@@ -18,7 +18,7 @@
 #include <algorithm>
 #include "../utils/chinese.h"
 
-using tinyxml2::XMLDocument;
+//using tinyxml2::XMLDocument;
 using tinyxml2::XMLError;
 using tinyxml2::XMLElement;
 using tinyxml2::XMLAttribute;
@@ -635,7 +635,7 @@ int Handler::parse_xml(const char *data, const char *s_mark, bool with_s_make, c
  */
 int Handler::parse_device_xml(const std::string& xml_str)
 {
-    XMLDocument doc;
+    tinyxml2::XMLDocument doc;
     auto ret = doc.Parse(xml_str.c_str());
     if (ret != XMLError::XML_SUCCESS) {
         LOGE("parse device xml error!");
@@ -784,7 +784,7 @@ int Handler::parse_recordinfo_xml(const std::string& xml_str, bool& is_last_item
 {
     do {
         //CLOGI(CYAN, "%s", xml_str.c_str());
-        XMLDocument doc;
+        tinyxml2::XMLDocument doc;
         auto ret = doc.Parse(xml_str.c_str());
         if (ret != XMLError::XML_SUCCESS) {
             LOGE("parse recordinfo xml error!");

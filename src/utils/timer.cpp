@@ -15,17 +15,18 @@ Timer::~Timer()
 
 }
 
-std::string Timer::GetCurrentTime()
+std::string Timer::XGetCurrentTime()
 {
     time_t t = time(nullptr);
-    struct tm* _tm = localtime(&t);
+    struct tm _tm;
+    localtime_s(&_tm, &t);
     std::stringstream ss;
-    ss << std::setw(4) << std::setfill('0') << _tm->tm_year + 1900 << "_"
-    << std::setw(2) << std::setfill('0') << _tm->tm_mon + 1 << "_"
-    << std::setw(2) << std::setfill('0') << _tm->tm_mday << "_"
-    << std::setw(2) << std::setfill('0') << _tm->tm_hour << "_"
-    << std::setw(2) << std::setfill('0') << _tm->tm_min << "_"
-    << std::setw(2) << std::setfill('0') << _tm->tm_sec;
+    ss << std::setw(4) << std::setfill('0') << _tm.tm_year + 1900 << "_"
+    << std::setw(2) << std::setfill('0') << _tm.tm_mon + 1 << "_"
+    << std::setw(2) << std::setfill('0') << _tm.tm_mday << "_"
+    << std::setw(2) << std::setfill('0') << _tm.tm_hour << "_"
+    << std::setw(2) << std::setfill('0') << _tm.tm_min << "_"
+    << std::setw(2) << std::setfill('0') << _tm.tm_sec;
     return ss.str();
 }
 

@@ -5,7 +5,6 @@
 #include "utils/helper.h"
 #include "utils/log.h"
 
-#include <arpa/inet.h>
 #include <functional>
 #include <memory>
 #include <mutex>

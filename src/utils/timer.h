@@ -22,7 +22,7 @@ public:
     Timer();
     ~Timer();
 
-    std::string GetCurrentTime();
+    std::string XGetCurrentTime();
 };
 }
 };

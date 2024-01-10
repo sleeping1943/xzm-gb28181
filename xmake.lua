@@ -1,6 +1,8 @@
 add_rules("mode.debug", "mode.release")
 
 target("gb28181-server")
+    set_default(true)
+    set_enabled(true)
     set_kind("binary")
     add_files(
         "src/*.cpp",
@@ -9,60 +11,62 @@ target("gb28181-server")
         "src/utils/**.cpp",
         "src/msg_builder/**.cpp"
     )
-    set_languages("c++11")
 
     set_targetdir("./")
-    add_cxxflags("-O0", "-Wall", "-g2", "-ggdb")
     --add_cflags("-g")
+    if (is_os("linux")) then
+        add_defines("LINUX")
+        print("current os is linux")
+        set_languages("c++11")
+        add_cxxflags("-O0", "-Wall", "-g2", "-ggdb")
+        add_includedirs(
+            "./",
+            "/usr/local/include"
+        )
 
-    add_includedirs(
-        "./",
-        "/usr/local/include"
-    )
+        add_linkdirs(
+            "/usr/local/lib"
+        )
 
-    add_linkdirs(
-        "/usr/local/lib"
-    )
+        add_links(
+            "iconv",
+            "hv",
+            "osip2", 
+            "osipparser2",
+            "eXosip2",
+            "boost_thread",
+            "boost_filesystem"
+        )
 
-    add_links(
-        "iconv",
-        "hv",
-        "osip2", 
-        "osipparser2",
-        "eXosip2",
-        "boost_thread",
-        "boost_filesystem"
-    )
+        add_syslinks(
+            "pthread"
+        )
+    elseif (is_os("windows")) then
+        print('current os is Windows')
+        add_defines("WIN32")
+        add_includedirs(
+            "./",
+            "E:/sleeping/3rd_lib/include",
+            "E:/sleeping/code/vcpkg/installed/x64-windows/include"
+        )
 
-    add_syslinks(
-        "pthread"
-    )
+        add_linkdirs(
+            "E:/sleeping/3rd_lib/lib",
+            "E:/sleeping/code/vcpkg/installed/x64-windows/lib",
+            "E:/sleeping/code/vcpkg/installed/x64-windows/bin"
+        )
 
-target("test-gb28181")
-    set_kind("binary")
-    add_files("src/test/*.cpp", "src/utils/*.cpp")
-    set_languages("c++11")
-
-    set_targetdir("./")
-    add_cxxflags("-O0", "-Wall", "-g2", "-ggdb")
-    --add_cflags("-g")
-
-    add_includedirs(
-        "./",
-        "/usr/local/include"
-    )
-
-    add_linkdirs(
-        "/usr/local/lib"
-    )
-
-    add_links(
-        "iconv",
-        "gtest",
-        "gtest_main"
-    )
-
-    add_syslinks(
-        "pthread"
-    )
-
+        add_links(
+            "hv",
+            "cares",
+            "osip2", 
+            "osipparser2",
+            "eXosip",
+            "Dnsapi",
+            "iconv",
+            "boost_thread-vc140-mt",
+            "boost_filesystem-vc140-mt"
+        )
+    else
+        print("unsuppported os!")
+    end

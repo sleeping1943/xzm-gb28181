@@ -9,7 +9,17 @@
  * 
  */
 #pragma once
+#ifdef LINUX
 #include <boost/thread/pthread/shared_mutex.hpp>
+#include <arpa/inet.h>
+#endif
+
+#ifdef WIN32
+#include <WinSock2.h>
+#include <Windows.h>
+#include <boost/thread/win32/shared_mutex.hpp>
+#endif
+
 #include <string>
 #include <iostream>
 #include <memory>
@@ -20,6 +30,7 @@
 #include <boost/thread/shared_mutex.hpp>
 #include <codecvt>
 #include <thread>
+#include <map>
 
 namespace Xzm
 {

@@ -148,7 +148,7 @@ int XHttpServer::query_device_list(HttpRequest* req, HttpResponse* resp)
                 str_type = "NVR设备";
             break;
             case kClientIPC:
-                str_type = "网络摄像头";
+                str_type = "IP Camera";
             break;
             default:
                 str_type = "未知";
@@ -396,7 +396,7 @@ int XHttpServer::get_snap(HttpRequest* req, HttpResponse* resp)
     << "&secret=" << "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
     std::string snap_url = ss.str();
     ss.str("");
-    ss << "./imgs/" << Xzm::util::Timer::instance()->GetCurrentTime() << "_" << ssrc << ".jpg";
+    ss << "./imgs/" << Xzm::util::Timer::instance()->XGetCurrentTime() << "_" << ssrc << ".jpg";
     std::string filepath = ss.str();
     requests::downloadFile(snap_url.c_str(), filepath.c_str());
     return resp->File(filepath.c_str());

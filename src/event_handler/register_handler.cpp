@@ -1,6 +1,6 @@
 #include "register_handler.h"
 #include <iostream>
-#include "/usr/local/include/osipparser2/osip_message.h"
+#include "osipparser2/osip_message.h"
 #include <osipparser2/headers/osip_header.h>
 #include <string.h>
 #include "../server.h"

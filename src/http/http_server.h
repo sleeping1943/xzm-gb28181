@@ -34,8 +34,15 @@ public:
         return s_info_.snap_cache_time;
     }
 
+#ifdef LINUX
 private:
+#endif
+#ifdef LINUX
+public:
+#endif
     XHttpServer();
+
+private:
     /**
      * @brief 根据device_id扫描设备信息
      * 

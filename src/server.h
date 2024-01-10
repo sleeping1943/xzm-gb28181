@@ -33,7 +33,12 @@ namespace Xzm
 class Server : public util::Singleton<Server>
 {
     friend class Singleton;
+#ifdef WIN32
+public:
+#endif
+#ifdef LINUX
 private:
+#endif
     Server();
 
 public:

@@ -16,7 +16,12 @@ namespace Xzm
     class MsgBuilder : public util::Singleton<MsgBuilder>
     {
         friend class Singleton;
+#ifdef LINUX
     private:
+#endif
+#ifdef WIN32
+    public:
+#endif
         MsgBuilder();
 
     public:

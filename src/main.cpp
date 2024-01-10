@@ -25,6 +25,14 @@ int main(int argc, char** argv)
     signal(SIGINT, quit_server);
     Xzm::Server::instance()->Test();
     std::string content;
+#ifdef WIN32
+        WSADATA wsa;
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) !=0 ) {
+            LOGE("init network error!");
+            return -1;
+        }
+#endif
+
     // 启动sip服务
     if (!Xzm::Server::instance()->Init(kConfPath)) {
         LOGE("init server error!");
