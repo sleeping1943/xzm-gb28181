@@ -150,6 +150,10 @@ bool Server::Start()
 bool Server::Stop()
 {
     is_quit_.store(true);
+    if (thread_.joinable()) {
+        thread_.join();
+        LOGI("quit server thread");
+    }
     return true;
 }
 

@@ -40,6 +40,10 @@ void XDeleter::Start()
 void XDeleter::Stop()
 {
     is_stop = true;
+    if (thread_.joinable()) {
+        thread_.join();
+        LOGI("quit deleter thread");
+    }
 }
 std::string XDeleter::delete_time(int interval)
 {

@@ -93,6 +93,10 @@ bool XHttpServer::Stop()
 {
     http_server_stop(&server_);
     is_quit_ = true;
+    if (thread_.joinable()) {
+        thread_.join();
+        LOGI("quit httpserver thread");
+    }
     return true;
 }
 
