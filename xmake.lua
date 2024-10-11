@@ -29,7 +29,7 @@ target("gb28181-server")
         )
 
         add_links(
-            "iconv",
+            -- "iconv",
             "hv",
             "osip2", 
             "osipparser2",
