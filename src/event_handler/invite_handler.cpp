@@ -4,8 +4,6 @@
 #include <boost/regex.h>
 #include <boost/algorithm/string/regex.hpp>
 #include <cctype>
-#include <chrono>
-#include <iterator>
 #include <memory>
 #include <osipparser2/headers/osip_header.h>
 #include <osipparser2/headers/osip_via.h>
@@ -14,9 +12,9 @@
 #include "../server.h"
 #include <hv/requests.h>
 #include <stdlib.h>
-#include <thread>
 #include "../utils/helper.h"
 #include "../utils/md5.h"
+#include "../utils/config.h"
 
 namespace Xzm
 {
@@ -40,7 +38,7 @@ namespace Xzm
 
         SendRtpInfoPtr send_info_ptr = std::make_shared<SendRtpInfo>();
         send_info_ptr->ssrc = parse_ssrc(str_body);
-        send_info_ptr->secret = "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
+        send_info_ptr->secret = gMediaServerInfo.secret;
         send_info_ptr->stream_id = TALK_PREFIX;
         send_info_ptr->app = "rtp";
         send_info_ptr->host = "__defaultVhost__";
@@ -63,7 +61,7 @@ namespace Xzm
         // 以下推流到摄像头逻辑修改为推流后执行
         std::stringstream ss;
         ss << "http://"
-            << Server::instance()->GetMediaServerInfo().rtp_ip
+            << gMediaServerInfo.rtp_ip
             << "/index/api/startSendRtp?"
             << "secret=" << ptr->secret
             << "&vhost=" << ptr->host
@@ -119,7 +117,7 @@ namespace Xzm
         std::string username, session_id, session_ver, str_proto, media_type;
         ClientPtr client_ptr = nullptr;
         do {
-            auto s_info = Server::instance()->GetServerInfo();
+            auto s_info = gServerInfo;
             sdp_message_init(&sdp_msg);
             sdp_message_parse(sdp_msg, body->body);
             send_info_ptr->client_ip = sdp_message_o_addr_get(sdp_msg);
@@ -168,7 +166,7 @@ namespace Xzm
                 return std::toupper(c);
             });
             send_info_ptr->stream_id += md5_str.substr(md5_str.length() - 8);
-            auto media_info = Server::instance()->GetMediaServerInfo();
+            auto media_info = gMediaServerInfo;
             // 构建消息体
             char sdp[2048] = {0};
             {

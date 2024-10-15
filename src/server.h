@@ -49,9 +49,6 @@ public:
     }
 
     bool Init(const std::string& conf_path);
-    bool SetServerInfo(const std::string& json_str);
-    inline ServerInfo GetServerInfo() { return s_info_; }
-    inline MediaServerInfo GetMediaServerInfo() { return media_server_info_; }
     inline struct eXosip_t* GetSipContext() { return sip_context_; }
 
     bool Start();
@@ -144,8 +141,6 @@ public:
 
 private:
     std::atomic_bool is_quit_;
-    ServerInfo s_info_;
-    MediaServerInfo media_server_info_;
     struct eXosip_t *sip_context_;
     std::thread thread_;
     std::unordered_map<eXosip_event_type, HandlerPtr> event_map_; // 注册的事件处理函数体

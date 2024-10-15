@@ -30,11 +30,11 @@
         "rtp_ip":"10.23.132.56",
         "rtpPort_commnet":"流媒体服务器端口",
         "rtpPort":10000,
-        "secret":"Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS",
+        "secret":"oZSRrN2ONMCBjnyWQde7HXsR5oFJmwDd",
         "rtp_proxy_port_min_comment":"对讲的流服务器使用的最小port,注意,需要和ZLMediakit的rtp_proxy配置对应",
-        "rtp_proxy_port_min":50000,
+        "rtp_proxy_port_min":40000,
         "rtp_proxy_port_max_comment":"对讲的流服务器使用的最大port,注意,需要和ZLMediakit的rtp_proxy配置对应",
-        "rtp_proxy_port_max":51000
+        "rtp_proxy_port_max":41000
     }
     
 }

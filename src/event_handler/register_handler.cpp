@@ -8,6 +8,7 @@
 #include "../utils/log.h"
 #include "../utils/helper.h"
 #include "../xzm_defines.h"
+#include "../utils/config.h"
 
 namespace Xzm
 {
@@ -70,7 +71,7 @@ bool RegisterHandler::register_client(eXosip_event_t *evtp, eXosip_t* sip_contex
 
     osip_contact_t *contact = nullptr;
     osip_message_get_contact(evtp->request, 0, &contact);
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     ClientPtr client = std::make_shared<Client>( contact->url->host,
         atoi(contact->url->port), contact->url->username);
     osip_header_t *user_agent = nullptr;
@@ -115,7 +116,7 @@ void RegisterHandler::response_register_401unauthorized(eXosip_event_t *evtp, eX
     char *dest = nullptr;
     osip_message_t * reg = nullptr;
     osip_www_authenticate_t * header = nullptr;
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     osip_www_authenticate_init(&header);
     osip_www_authenticate_set_auth_type (header, osip_strdup("Digest"));
     osip_www_authenticate_set_realm(header,osip_enquote(s_info.realm.c_str()));
@@ -162,7 +163,7 @@ bool RegisterHandler::check_ha1(eXosip_event_t *evtp, osip_authorization_t *auth
     SIP_STRDUP(uri);
 
     // 计算比较hash值,若sip协议中携带信息计算后ha1与服务器的信息计算后ha1相等，则验证授权通过
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     DigestCalcHA1(algorithm, username, realm,
      s_info.passwd.c_str(), nonce, nonce_count, HA1);
     DigestCalcResponse(HA1, nonce, nonce_count, auth->cnonce,

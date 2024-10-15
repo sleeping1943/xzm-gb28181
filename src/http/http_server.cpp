@@ -3,16 +3,14 @@
 #include "../utils/json_helper.h"
 #include "../utils/helper.h"
 #include "../utils/log.h"
-#include <chrono>
-#include <functional>
 #include <hv/HttpServer.h>
-#include <mutex>
 #include <ostream>
 #include <thread>
 #include "../server.h"
 #include "../utils/timer.h"
 #include "hv/hasync.h"
 #include "hv/requests.h"
+#include "../utils/config.h"
 
 namespace Xzm
 {
@@ -388,7 +386,7 @@ int XHttpServer::get_snap(HttpRequest* req, HttpResponse* resp)
     if (ssrc.empty()) {
         return resp->String(get_simple_info(400, "can not find param ssrc!"));
     }
-    std::string media_server = Server::instance()->GetMediaServerInfo().rtp_ip;
+    std::string media_server = gMediaServerInfo.rtp_ip;
     std::stringstream ss;
     ss << "rtsp://" << media_server << "/rtp/" << ssrc;
     std::string rtsp_url = ss.str();
@@ -419,8 +417,8 @@ int XHttpServer::start_rtsp_publish(HttpRequest* req, HttpResponse* resp)
     auto req_ptr = std::make_shared<ClientRequest>();
     req_ptr->client_ptr = client_ptr;
     client_ptr->real_device_id = device;
-    auto s_info = Server::instance()->GetServerInfo();
-    auto media_info = Server::instance()->GetMediaServerInfo();
+    auto s_info = gServerInfo;
+    auto media_info = gMediaServerInfo;
     client_ptr->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);
     client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(media_info.rtp_ip, ssrc);
@@ -540,8 +538,8 @@ int XHttpServer::start_playback(HttpRequest* req, HttpResponse* resp)
         CLOGE(RED, "%s", e.what());
         return resp->String(get_simple_info(400, e.what()));
     }
-    auto s_info = Server::instance()->GetServerInfo();
-    auto media_info = Server::instance()->GetMediaServerInfo();
+    auto s_info = gServerInfo;
+    auto media_info = gMediaServerInfo;
     client_ptr->ssrc = Xzm::util::build_ssrc(false, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client_ptr->ssrc);
     client_ptr->rtsp_url = Xzm::util::get_rtsp_addr(media_info.rtp_ip, ssrc);
@@ -627,7 +625,7 @@ int XHttpServer::get_rtp_info(HttpRequest* req, HttpResponse* resp)
         return resp->String(get_simple_info(400, "can not find the device client"));
     }
     // 向流服务器查询
-    auto media_ptr = Xzm::Server::instance()->GetMediaServerInfo();
+    auto media_ptr = gMediaServerInfo;
     std::stringstream ss;
     ss << "http://" << media_ptr.rtp_ip
         << "/index/api/getRtpInfo?secret=" << media_ptr.secret
@@ -682,9 +680,8 @@ int XHttpServer::on_publish(HttpRequest* req, HttpResponse* resp)
     HV_JSON_GET_STRING(json, vhost, "vhost"); // 流虚拟主机
     HV_JSON_GET_STRING(json, media_server_id, "mediaServerId"); // 服务器id,通过配置文件设置
     HV_JSON_GET_INT(json, port, "port"); // 播放器端口号
-
     std::stringstream ss;
-    ss << "rtsp://" << Server::instance()->GetServerInfo().ip << "/rtp/" << stream;
+    ss << "rtsp://" << gServerInfo.ip << "/rtp/" << stream;
     std::string rtsp_url = ss.str();
     std::cout << RED
     << "app:" << app << std::endl

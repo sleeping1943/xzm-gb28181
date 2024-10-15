@@ -15,7 +15,7 @@ target("gb28181-server")
     set_targetdir("./")
     --add_cflags("-g")
     if (is_os("linux")) then
-        add_defines("LINUX")
+        add_defines("LINUX", "FMT_HEADER_ONLY")
         print("current os is linux")
         set_languages("c++11")
         add_cxxflags("-O0", "-Wall", "-g2", "-ggdb")
@@ -43,7 +43,7 @@ target("gb28181-server")
         )
     elseif (is_os("windows")) then
         print('current os is Windows')
-        add_defines("WIN32")
+        add_defines("WIN32", "FMT_HEADER_ONLY")
         add_includedirs(
             "./",
             "E:/sleeping/3rd_lib/include",

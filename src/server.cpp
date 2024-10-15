@@ -1,7 +1,5 @@
 #include "server.h"
 #include "event_handler/handler.h"
-#include "include/rapidjson/document.h"
-#include "utils/json_helper.h"
 #include "utils/helper.h"
 #include "utils/log.h"
 
@@ -14,6 +12,7 @@
 #include "event_handler/call_message_answer_handler.h"
 #include "event_handler/invite_handler.h"
 #include "xzm_defines.h"
+#include "utils/config.h"
 
 /*
 
@@ -43,20 +42,9 @@ Server::~Server()
 
 bool Server::Init(const std::string& conf_path)
 {
-    std::string content;
-    if (!Xzm::util::read_file(conf_path, content)) {
-        content = "read config error!";
-        std::cerr << content << std::endl;
-        return false;
-    }
-    std::cout << content << std::endl;
-    if (!Xzm::Server::instance()->SetServerInfo(content)) {
-        std::cerr << "json parse error!" << std::endl;
-        return false;
-    }
     // 分配流服务器对话端口
-    unsigned short i = media_server_info_.rtp_proxy_port_min;
-    for (; i <= media_server_info_.rtp_proxy_port_max; i++) {
+    unsigned short i = gMediaServerInfo.rtp_proxy_port_min;
+    for (; i <= gMediaServerInfo.rtp_proxy_port_max; i++) {
         talk_ports_.push(i);
     }
     // 注册msg回调响应函数
@@ -65,34 +53,6 @@ bool Server::Init(const std::string& conf_path)
         REGISTER_MSG_RESPONSE("RecordInfo", &Handler::response_recordinfo, kDefaultHandler)
         REGISTER_MSG_RESPONSE("Keepalive", &Handler::response_keepalive, kDefaultHandler)
     END_REGISTER_MSG_RESPONSE()
-    return true;
-}
-
-bool Server::SetServerInfo(const std::string& json_str)
-{
-    rapidjson::Document doc;
-    JSON_PARSE_BOOL(doc, json_str.c_str());
-
-    if (!doc.HasMember("sip_config") || !doc["sip_config"].IsObject()) {
-        return false;
-    }
-    auto& sip_config = doc["sip_config"];
-    JSON_VALUE_REQUIRE_STRING(sip_config, "ua", s_info_.ua);
-    JSON_VALUE_REQUIRE_STRING(sip_config, "nonce", s_info_.nonce);
-    JSON_VALUE_REQUIRE_STRING(sip_config, "ip", s_info_.ip);
-    JSON_VALUE_REQUIRE_INT(sip_config, "port", s_info_.port);
-    JSON_VALUE_REQUIRE_STRING(sip_config, "sipId", s_info_.sip_id);
-    JSON_VALUE_REQUIRE_STRING(sip_config, "sipRealm", s_info_.realm);
-    JSON_VALUE_REQUIRE_STRING(sip_config, "sipPass", s_info_.passwd);
-    JSON_VALUE_REQUIRE_INT(sip_config, "sipTimeout", s_info_.timeout);
-    JSON_VALUE_REQUIRE_INT(sip_config, "sipExpiry", s_info_.valid_time);
-
-    auto& media_server_config = doc["media_server_config"];
-    JSON_VALUE_REQUIRE_STRING(media_server_config, "rtp_ip", media_server_info_.rtp_ip);
-    JSON_VALUE_REQUIRE_STRING(media_server_config, "secret", media_server_info_.secret);
-    JSON_VALUE_REQUIRE_INT(media_server_config, "rtpPort", media_server_info_.rtp_port);
-    JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_min", media_server_info_.rtp_proxy_port_min);
-    JSON_VALUE_REQUIRE_INT(media_server_config, "rtp_proxy_port_max", media_server_info_.rtp_proxy_port_max);
     return true;
 }
 
@@ -120,18 +80,18 @@ bool Server::init_sip_server()
       step 3
       开始监听
      */
-    if (eXosip_listen_addr(sip_context_, IPPROTO_UDP, nullptr, s_info_.port, AF_INET, 0)) {
+    if (eXosip_listen_addr(sip_context_, IPPROTO_UDP, nullptr, gServerInfo.port, AF_INET, 0)) {
         LOG("eXosip_listen_addr error");
         return false;
     }
 
-     eXosip_set_user_agent(sip_context_, s_info_.ua.c_str());
+     eXosip_set_user_agent(sip_context_, gServerInfo.ua.c_str());
      /**
       step 4
       添加授权信息
       */
-    if (eXosip_add_authentication_info(sip_context_, s_info_.sip_id.c_str(),
-       s_info_.sip_id.c_str(), s_info_.passwd.c_str(), nullptr, s_info_.realm.c_str())) {
+    if (eXosip_add_authentication_info(sip_context_, gServerInfo.sip_id.c_str(),
+       gServerInfo.sip_id.c_str(), gServerInfo.passwd.c_str(), nullptr, gServerInfo.realm.c_str())) {
         LOG("eXosip_add_authentication_info error");
         return false;
     }
@@ -378,8 +338,8 @@ void Server::DelLivingInfoPtr(const std::string& stream_id)
             case kLivingTypeAudio:
             break;
             case kLivingTypeTalkAudio:
-                if (living_ptr->talk_port >= media_server_info_.rtp_proxy_port_min
-                && living_ptr->talk_port <= media_server_info_.rtp_proxy_port_max) {
+                if (living_ptr->talk_port >= gMediaServerInfo.rtp_proxy_port_min
+                && living_ptr->talk_port <= gMediaServerInfo.rtp_proxy_port_max) {
                     ReleaseTalkPort(living_ptr->talk_port);
                 } else {
                     LOGE("can not release talk_port[%d]", living_ptr->talk_port);
@@ -473,8 +433,8 @@ unsigned short Server::GetTalkPort()
 
 void Server::ReleaseTalkPort(short port)
 {
-    if (port < media_server_info_.rtp_proxy_port_min
-    || port > media_server_info_.rtp_proxy_port_max) {
+    if (port < gMediaServerInfo.rtp_proxy_port_min
+    || port > gMediaServerInfo.rtp_proxy_port_max) {
         return;
     }
     std::lock_guard<std::mutex> _lock(talk_mutex_);

@@ -1,7 +1,5 @@
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <boost/thread/thread_time.hpp>
-#include <chrono>
-#include <thread>
 #include "server.h"
 #include "utils/helper.h"
 #include <signal.h>
@@ -11,6 +9,8 @@
 #include "deleter.h"
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "utils/config.h"
+#include "fmt/format.h"
 
 const static std::string kConfPath = "./conf/config.json";
 
@@ -36,7 +36,11 @@ int main(int argc, char** argv)
             return -1;
         }
 #endif
-
+    Xzm::util::read_file(kConfPath, content);
+    if (!gConfigPtr->Parse(content)) {
+        LOGE("%s",fmt::format("parse config[{}] error", kConfPath).c_str());
+        return -1;
+    }
     // 启动sip服务
     if (!Xzm::Server::instance()->Init(kConfPath)) {
         LOGE("init server error!");
@@ -46,7 +50,7 @@ int main(int argc, char** argv)
         LOGE("start server error!");
         return -1;
     }
-    CLOGI(BLUE, "s_info_:%s", Xzm::Server::instance()->GetServerInfo().str().c_str());
+    CLOGI(BLUE, "s_info_:%s", gServerInfo.str().c_str());
     if (!Xzm::XHttpServer::instance()->Init(kConfPath)) {
         LOGE("init http_server error!");
         return -2;

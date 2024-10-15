@@ -17,6 +17,7 @@
 #include "../msg_builder/msg_builder.h"
 #include <algorithm>
 #include "../utils/chinese.h"
+#include "../utils/config.h"
 
 //using tinyxml2::XMLDocument;
 using tinyxml2::XMLError;
@@ -65,7 +66,7 @@ int Handler::request_cancel_invite(eXosip_t* sip_context_, ClientRequestPtr req)
         return -1;
     }
     eXosip_lock(sip_context_);
-    int ret = eXosip_call_terminate(sip_context_, cid, did);
+    eXosip_call_terminate(sip_context_, cid, did);
     eXosip_unlock(sip_context_);
     gServer->DelPublishStreamInfo(ssrc);
     return 0;
@@ -74,7 +75,7 @@ int Handler::request_cancel_invite(eXosip_t* sip_context_, ClientRequestPtr req)
 int Handler::request_bye(eXosip_event_t *evtp, eXosip_t *sip_context_)
 {
     eXosip_lock(sip_context_);
-    int ret = eXosip_call_terminate(sip_context_, evtp->cid, evtp->did);
+    eXosip_call_terminate(sip_context_, evtp->cid, evtp->did);
     eXosip_unlock(sip_context_);
     return 0;
 }
@@ -197,13 +198,12 @@ int Handler::request_invite(eXosip_t *sip_context, ClientRequestPtr req)
     char to[1024] = {0};
     char contact[1024] = {0};
     char sdp[2048] = {0};
-    char head[1024] = {0};
     ClientPtr  client = req->client_ptr;
     /*
         在http请求推流时就确定rtsp推流地址
     */
-    auto s_info = Server::instance()->GetServerInfo();
-    auto media_info = Server::instance()->GetMediaServerInfo();
+    auto s_info = gServerInfo;
+    auto media_info = gMediaServerInfo;
     //client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     //auto ssrc = Xzm::util::convert10to16(client->ssrc);
     //client->rtsp_url = Xzm::util::get_rtsp_addr(s_info.rtp_ip, ssrc);
@@ -261,11 +261,10 @@ int Handler::request_invite_talk(eXosip_t *sip_context, ClientRequestPtr req)
     char to[1024] = {0};
     char contact[1024] = {0};
     char sdp[2048] = {0};
-    char head[1024] = {0};
     ClientPtr client = req->client_ptr;
-    auto media_info = Server::instance()->GetMediaServerInfo();
+    auto media_info = gMediaServerInfo;
 
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     client->ssrc = Xzm::util::build_ssrc(true, s_info.realm);
     auto ssrc = Xzm::util::convert10to16(client->ssrc);
     client->rtsp_url = Xzm::util::get_rtsp_addr(media_info.rtp_ip, ssrc);
@@ -339,7 +338,7 @@ int Handler::request_device_query(eXosip_t *sip_context, ClientRequestPtr req)
     char str_from[512] = {0};
     char str_to[512] = {0};
     char str_body[2048] = {0};
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
     sprintf(str_to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
     snprintf(str_body, 2048,
@@ -370,7 +369,7 @@ int Handler::request_refresh_device_library(eXosip_t *sip_context, ClientRequest
     }
     char str_from[512] = {0};
     char str_to[512] = {0};
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
     sprintf(str_to, "sip:%s@%s:%d", client->real_device_id.c_str(), client->ip.c_str(), client->port);
     auto temp_ptr = std::make_shared<XmlQueryLibraryParam>();
@@ -399,17 +398,14 @@ int Handler::request_invite_playback(eXosip_t *sip_context, ClientRequestPtr req
     char to[1024] = {0};
     char contact[1024] = {0};
     char sdp[2048] = {0};
-    char head[1024] = {0};
-    char start_time[32] = {0};
-    char end_time[32] = {0};
     RequestParamQueryHistoryPtr param_ptr = std::dynamic_pointer_cast<RequestParamQueryHistory>(req->param_ptr);
     if (param_ptr == nullptr) {
         CLOGE(RED, "param_ptr cast nullptr!");
         return -1;
     }
     ClientPtr client = req->client_ptr;
-    auto s_info = Server::instance()->GetServerInfo();
-    auto media_info = Server::instance()->GetMediaServerInfo();
+    auto s_info = gServerInfo;
+    auto media_info = gMediaServerInfo;
 
     CLOGI(RED, "addr:%s", client->rtsp_url.c_str());
     sprintf(from, "sip:%s@%s:%d", s_info.sip_id.c_str(),s_info.ip.c_str(), s_info.port);
@@ -505,7 +501,7 @@ int Handler::request_fast_forward(eXosip_t *sip_context, ClientRequestPtr req)
     char contact[1024] = {0};
     char body_info[1024] = {0};
     ClientPtr  client = req->client_ptr;
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
 
     auto param_ptr = std::dynamic_pointer_cast<RequestParamFastforward>(req->param_ptr);
     if (!param_ptr) {
@@ -699,7 +695,7 @@ int Handler::parse_device_xml(const std::string& xml_str)
         } else if (str_manufacturer.find("dahua") != std::string::npos) {
             client_info->camera_manufacturer = kCameraManufacturerDaHua;
         }
-        auto s_info = Server::instance()->GetServerInfo();
+        auto s_info = gServerInfo;
         client_info->channel_type = kChannelNone;
         do {
             if (str_client_type.find("camera") != std::string::npos) {
@@ -900,7 +896,7 @@ int Handler::get_random_sn()
 
 int Handler::generate_borad_cast_xml(char* str_from, char* str_to, char* str_body, ClientInfoPtr client_info_ptr, ClientPtr client)
 {
-    auto s_info = Server::instance()->GetServerInfo();
+    auto s_info = gServerInfo;
     sprintf(str_from, "sip:%s@%s:%d", s_info.sip_id.c_str(), s_info.ip.c_str(), s_info.port);
     sprintf(str_to, "sip:%s@%s:%d", client->device.c_str(), client->ip.c_str(), client->port);
     switch (client_info_ptr->camera_manufacturer) {
