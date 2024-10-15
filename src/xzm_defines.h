@@ -478,12 +478,12 @@ struct SendRtpInfo
     int use_ps = 1;
     int only_audio = 1;
     unsigned short talk_port;
-    unsigned short client_port;
+    unsigned short client_port; // sip客户端接收数据端口
     std::string host;
     std::string app;
     std::string rtp_ip;
     std::string stream_id;
-    std::string client_ip;
+    std::string client_ip;  // sip客户端ip
     std::string secret;
     std::string ssrc;
 };

@@ -453,7 +453,7 @@ bool Server::run()
             }
         }
         eXosip_event_t *evtp = eXosip_event_wait(sip_context_, 0, 20);  // 接受时间20ms超时
-        process_request();
+        process_http_request();
         if (!evtp) {
             eXosip_automatic_action(sip_context_);  // 执行一些自动操作
             osip_usleep(100000);
@@ -502,7 +502,7 @@ bool Server::register_event_handler()
     return true;
 }
 
-int Server::process_request()
+int Server::process_http_request()
 {
     if (!sip_context_ || !kDefaultHandler) {
         return -1;

@@ -15,6 +15,7 @@
 #include "../utils/helper.h"
 #include "../utils/md5.h"
 #include "../utils/config.h"
+#include "fmt/format.h"
 
 namespace Xzm
 {
@@ -45,10 +46,12 @@ namespace Xzm
         if (!replay_invite(evtp, sip_context_, body, send_info_ptr)) {
             return false;
         }
-        // 发送openRtpServer的http请求,确定发送端口
-        // 本地测试
-        send_info_ptr->client_ip = "10.23.132.77";
-        send_info_ptr->client_port = 8020;
+        /* 发送openRtpServer的http请求,确定发送端口
+           注: client_ip和client_port已在replay_invite中解析出
+           本地测试
+        */
+        //send_info_ptr->client_ip = "10.23.132.56";
+        //send_info_ptr->client_port = 8020;
         if (!send_meida_data(send_info_ptr)) {
             return false;
         }
@@ -59,23 +62,10 @@ namespace Xzm
     bool InviteHandler::send_meida_data(const SendRtpInfoPtr ptr)
     {
         // 以下推流到摄像头逻辑修改为推流后执行
-        std::stringstream ss;
-        ss << "http://"
-            << gMediaServerInfo.rtp_ip
-            << "/index/api/startSendRtp?"
-            << "secret=" << ptr->secret
-            << "&vhost=" << ptr->host
-            << "&app=" << ptr->app
-            << "&stream=" << ptr->stream_id
-            << "&src_port=" << ptr->talk_port
-            << "&ssrc=" << ptr->stream_id
-            << "&dst_url=" << ptr->client_ip.c_str()
-            << "&dst_port=" << ptr->client_port
-            << "&is_udp=" << ptr->is_udp
-            << "&pt=" << ptr->pt
-            << "&use_ps=" << ptr->use_ps
-            << "&only_audio=" << ptr->only_audio;
-        std::string publish_url = ss.str();
+        std::string publish_url = fmt::format("http://{}/index/api/startSendRtp?secret={}&vhost={}&app={}" 
+                                        "&stream={}&src_port={}&ssrc={}&dst_url={}&dst_port={}&is_udp={}&pt={}&use_ps={}&only_audio={}"
+                                        , gMediaServerInfo.rtp_ip , ptr->secret , ptr->host , ptr->app, ptr->stream_id, ptr->talk_port
+                                        , ptr->stream_id, ptr->client_ip , ptr->client_port , ptr->is_udp, ptr->pt, ptr->use_ps, ptr->only_audio);
         CLOGI(YELLOW, "url:%s", publish_url.c_str());
         auto resp = requests::get(publish_url.c_str());
         auto ret_json = resp->GetJson();
@@ -85,7 +75,6 @@ namespace Xzm
             LOGE("startSendRtp failed!,code:%d", publish_code);
             return false;
         }
-        std::cout << "\n----------------------------body:" << resp->body << std::endl;
         return true;
     }
 
@@ -128,14 +117,10 @@ namespace Xzm
             str_proto = sdp_message_m_proto_get(sdp_msg, 0);
             media_type = sdp_message_m_media_get(sdp_msg, 0);
 
-            printf("\nclient_ip:%s\tusername:%s\tsession_id:%s\tsession_ver:%s\tclient_port:%d\tstr_proto:%s\tmedia_type:%s\n" 
-             , send_info_ptr->client_ip.c_str(),
-                username.c_str(),
-                session_id.c_str(),
-                session_ver.c_str(),
-                send_info_ptr->client_port,
-                str_proto.c_str(),
-                media_type.c_str());
+            std::string str_client_info = fmt::format("\nclient_ip:{}\tusername:{}\tsession_id:{}\tsession_ver:{}\tclient_port:{}\tstr_proto:{}\tmedia_type:{}\n" 
+                                                , send_info_ptr->client_ip, username, session_id, session_ver
+                                                , send_info_ptr->client_port, str_proto, media_type);
+            CLOGI(RED,"sip_client_info:%s", str_client_info.c_str());
             dump_request(evtp);
             dump_response(evtp);
             // 找到对应的client

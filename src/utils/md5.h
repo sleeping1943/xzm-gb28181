@@ -35,7 +35,7 @@
  *
  * @return one bit32.
  */
-#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
+#define F4(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
@@ -55,7 +55,7 @@
  * @Transformations for rounds 1, 2, 3, and 4.
  */
 #define FF(a, b, c, d, x, s, ac) { \
-  (a) += F ((b), (c), (d)) + (x) + ac; \
+  (a) += F4 ((b), (c), (d)) + (x) + ac; \
   (a) = ROTATELEFT ((a), (s)); \
   (a) += (b); \
 }

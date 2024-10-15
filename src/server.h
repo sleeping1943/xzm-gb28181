@@ -131,7 +131,7 @@ private:
      * 
      * @return int 
      */
-    int process_request();
+    int process_http_request();
 
 
 public:
