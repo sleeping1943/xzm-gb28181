@@ -73,6 +73,20 @@ namespace Xzm
 #define END_HV_REGISTER_HANDLER() };
 
 /* xml解析 */
+#define XML_GET_STRING_DEFAULT(node, name, value, temp_node, temp_text, default_string) \
+    {   \
+        temp_node = node->FirstChildElement(name);    \
+        if (temp_node) {    \
+            temp_text = temp_node->GetText();   \
+            if (temp_text) {    \
+                value = temp_text;   \
+            } else {   \
+                value = default_string; \
+            }\
+        }   \
+    }
+
+
 #define XML_GET_STRING(node, name, value, temp_node, temp_text) \
     {   \
         temp_node = node->FirstChildElement(name);    \

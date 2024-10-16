@@ -11,6 +11,7 @@
 #include "hv/hasync.h"
 #include "hv/requests.h"
 #include "../utils/config.h"
+#include "./fmt/format.h"
 
 namespace Xzm
 {
@@ -386,20 +387,10 @@ int XHttpServer::get_snap(HttpRequest* req, HttpResponse* resp)
     if (ssrc.empty()) {
         return resp->String(get_simple_info(400, "can not find param ssrc!"));
     }
-    std::string media_server = gMediaServerInfo.rtp_ip;
-    std::stringstream ss;
-    ss << "rtsp://" << media_server << "/rtp/" << ssrc;
-    std::string rtsp_url = ss.str();
-    ss.str("");
-    ss << "http://" << media_server << "/index/api/getSnap"
-    << "?url=" << rtsp_url
-    << "&timeout_sec=" << 10
-    << "&expire_sec=" << 30
-    << "&secret=" << "Lsb4XJqAdK0QLVErbKEvBBGrSDJ3lexS";
-    std::string snap_url = ss.str();
-    ss.str("");
-    ss << "./imgs/" << Xzm::util::Timer::instance()->XGetCurrentTime() << "_" << ssrc << ".jpg";
-    std::string filepath = ss.str();
+    std::string rtsp_url = fmt::format("rtsp://{}/rtp/{}", gMediaServerInfo.rtp_ip, ssrc);
+    std::string snap_url = fmt::format("http://{}/index/api/getSnap?url={}&timeout_sec={}&expire_sec={}&secret={}"
+                                        , gMediaServerInfo.rtp_ip, rtsp_url, 10, 30, gMediaServerInfo.secret );
+    std::string filepath = fmt::format("./imgs/{}_{}.jpg", Xzm::util::Timer::instance()->XGetCurrentTime(), ssrc) ;
     requests::downloadFile(snap_url.c_str(), filepath.c_str());
     return resp->File(filepath.c_str());
 }

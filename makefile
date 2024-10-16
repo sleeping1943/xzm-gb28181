@@ -6,138 +6,164 @@ ifneq ($(VERBOSE),1)
 VV=@
 endif
 
-CCACHE=/usr/bin/ccache
 MXX=/usr/bin/gcc
-MM=/usr/bin/gcc
-CXX=/usr/bin/gcc
 AS=/usr/bin/gcc
+CXX=/usr/bin/gcc
+MM=/usr/bin/gcc
 CC=/usr/bin/gcc
 
+SH=/usr/bin/g++
 AR=/usr/bin/ar
 LD=/usr/bin/g++
-SH=/usr/bin/g++
 
+gb28181-server_LD=/usr/bin/g++
+gb28181-server_CXX=/usr/bin/gcc
+gb28181-server_CXX=/usr/bin/gcc
 
-gb28181-client_CXXFLAGS=-m64 -g -std=c++11 -I. -I/usr/local/include -O0 -Wall -g2 -ggdb
-gb28181-client_CXXFLAGS=-m64 -g -std=c++11 -I. -I/usr/local/include -O0 -Wall -g2 -ggdb
-gb28181-client_LDFLAGS=-m64 -L/usr/local/lib -lpthread -lhv -losip2 -losipparser2 -leXosip2 -lboost_thread
-gb28181-server_CXXFLAGS=-m64 -g -std=c++11 -I. -I/usr/local/include -O0 -Wall -g2 -ggdb
-gb28181-server_CXXFLAGS=-m64 -g -std=c++11 -I. -I/usr/local/include -O0 -Wall -g2 -ggdb
-gb28181-server_LDFLAGS=-m64 -L/usr/local/lib -lpthread -lhv -losip2 -losipparser2 -leXosip2 -lboost_thread
+gb28181-server_CXXFLAGS=-m64 -g -std=c++11 -I. -I/usr/local/include -DLINUX -DFMT_HEADER_ONLY -O0 -Wall -g2 -ggdb
+gb28181-server_CXXFLAGS=-m64 -g -std=c++11 -I. -I/usr/local/include -DLINUX -DFMT_HEADER_ONLY -O0 -Wall -g2 -ggdb
+gb28181-server_LDFLAGS=-m64 -L/usr/local/lib -lhv -losip2 -losipparser2 -leXosip2 -lboost_thread -lboost_filesystem -lpthread
 
-default:  gb28181-client gb28181-server
+default:  gb28181-server
 
-all:  gb28181-client gb28181-server
+all:  gb28181-server
 
-.PHONY: default all  gb28181-client gb28181-server
+.PHONY: default all  gb28181-server
 
-gb28181-client: build/.objs/gb28181-client/linux/x86_64/debug/src/client/src/main.cpp.o
-	@echo linking.debug gb28181-client
-	@mkdir -p .
-	$(VV)$(LD) -o gb28181-client build/.objs/gb28181-client/linux/x86_64/debug/src/client/src/main.cpp.o $(gb28181-client_LDFLAGS)
-
-build/.objs/gb28181-client/linux/x86_64/debug/src/client/src/main.cpp.o: src/client/src/main.cpp
-	@echo ccache compiling.debug src/client/src/main.cpp
-	@mkdir -p build/.objs/gb28181-client/linux/x86_64/debug/src/client/src
-	$(VV)$(CXX) -c $(gb28181-client_CXXFLAGS) -o build/.objs/gb28181-client/linux/x86_64/debug/src/client/src/main.cpp.o src/client/src/main.cpp
-
-gb28181-server: build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o
+gb28181-server: build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o
 	@echo linking.debug gb28181-server
 	@mkdir -p .
-	$(VV)$(LD) -o gb28181-server build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o $(gb28181-server_LDFLAGS)
-
-build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o: src/xzm_defines.cpp
-	@echo ccache compiling.debug src/xzm_defines.cpp
-	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o src/xzm_defines.cpp
-
-build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o: src/server.cpp
-	@echo ccache compiling.debug src/server.cpp
-	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o src/server.cpp
+	$(VV)$(gb28181-server_LD) -o gb28181-server build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o $(gb28181-server_LDFLAGS)
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o: src/main.cpp
-	@echo ccache compiling.debug src/main.cpp
+	@echo compiling.debug src/main.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o src/main.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o src/main.cpp
 
-build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o: src/event_handler/handler.cpp
-	@echo ccache compiling.debug src/event_handler/handler.cpp
+build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o: src/deleter.cpp
+	@echo compiling.debug src/deleter.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o src/deleter.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o: src/server.cpp
+	@echo compiling.debug src/server.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o src/server.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o: src/xzm_defines.cpp
+	@echo compiling.debug src/xzm_defines.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o src/xzm_defines.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o: src/event_handler/call_message_answer_handler.cpp
+	@echo compiling.debug src/event_handler/call_message_answer_handler.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o src/event_handler/handler.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o src/event_handler/call_message_answer_handler.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o: src/event_handler/call_answer_handler.cpp
-	@echo ccache compiling.debug src/event_handler/call_answer_handler.cpp
+	@echo compiling.debug src/event_handler/call_answer_handler.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o src/event_handler/call_answer_handler.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o src/event_handler/call_answer_handler.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o: src/event_handler/register_handler.cpp
-	@echo ccache compiling.debug src/event_handler/register_handler.cpp
+	@echo compiling.debug src/event_handler/register_handler.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o src/event_handler/register_handler.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o src/event_handler/register_handler.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o: src/event_handler/handler.cpp
+	@echo compiling.debug src/event_handler/handler.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o src/event_handler/handler.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o: src/event_handler/invite_handler.cpp
+	@echo compiling.debug src/event_handler/invite_handler.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o src/event_handler/invite_handler.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o: src/http/http_server.cpp
-	@echo ccache compiling.debug src/http/http_server.cpp
+	@echo compiling.debug src/http/http_server.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/http
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o src/http/http_server.cpp
-
-build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o: src/utils/http_digest.cpp
-	@echo ccache compiling.debug src/utils/http_digest.cpp
-	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o src/utils/http_digest.cpp
-
-build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o: src/utils/tinyxml2.cpp
-	@echo ccache compiling.debug src/utils/tinyxml2.cpp
-	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o src/utils/tinyxml2.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o src/http/http_server.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o: src/utils/singleton.cpp
-	@echo ccache compiling.debug src/utils/singleton.cpp
+	@echo compiling.debug src/utils/singleton.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o src/utils/singleton.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o src/utils/singleton.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o: src/utils/json_helper.cpp
-	@echo ccache compiling.debug src/utils/json_helper.cpp
+	@echo compiling.debug src/utils/json_helper.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o src/utils/json_helper.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o src/utils/json_helper.cpp
 
-build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o: src/utils/md5.cpp
-	@echo ccache compiling.debug src/utils/md5.cpp
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o: src/utils/http_digest.cpp
+	@echo compiling.debug src/utils/http_digest.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o src/utils/md5.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o src/utils/http_digest.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o: src/utils/chinese.cpp
+	@echo compiling.debug src/utils/chinese.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o src/utils/chinese.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o: src/utils/helper.cpp
-	@echo ccache compiling.debug src/utils/helper.cpp
+	@echo compiling.debug src/utils/helper.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o src/utils/helper.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o src/utils/helper.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o: src/utils/tinyxml2.cpp
+	@echo compiling.debug src/utils/tinyxml2.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o src/utils/tinyxml2.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o: src/utils/_md5.cpp
+	@echo compiling.debug src/utils/_md5.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o src/utils/_md5.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o: src/utils/md5.cpp
+	@echo compiling.debug src/utils/md5.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o src/utils/md5.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o: src/utils/config.cpp
+	@echo compiling.debug src/utils/config.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o src/utils/config.cpp
+
+build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o: src/utils/timer.cpp
+	@echo compiling.debug src/utils/timer.cpp
+	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/utils
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o src/utils/timer.cpp
 
 build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o: src/msg_builder/msg_builder.cpp
-	@echo ccache compiling.debug src/msg_builder/msg_builder.cpp
+	@echo compiling.debug src/msg_builder/msg_builder.cpp
 	@mkdir -p build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder
-	$(VV)$(CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o src/msg_builder/msg_builder.cpp
+	$(VV)$(gb28181-server_CXX) -c $(gb28181-server_CXXFLAGS) -o build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o src/msg_builder/msg_builder.cpp
 
-clean:  clean_gb28181-client clean_gb28181-server
-
-clean_gb28181-client: 
-	@rm -rf gb28181-client
-	@rm -rf gb28181-client.sym
-	@rm -rf build/.objs/gb28181-client/linux/x86_64/debug/src/client/src/main.cpp.o
+clean:  clean_gb28181-server
 
 clean_gb28181-server: 
 	@rm -rf gb28181-server
 	@rm -rf gb28181-server.sym
-	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o
-	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o
-	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o
-	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o
-	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o
-	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o
+	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o
 	@rm -rf build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o
 

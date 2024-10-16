@@ -661,7 +661,7 @@ int Handler::parse_device_xml(const std::string& xml_str)
     do {
         ClientInfoPtr client_info = std::make_shared<ClientInfo>();
         client_info->camera_manufacturer = kCameraManufacturerNone;
-        client_info->device_id = node_device_item->FirstChildElement("DeviceID")->GetText();
+        XML_GET_STRING_DEFAULT(node_device_item, "DeviceID", client_info->device_id, temp_node, temp_text, device_id);
         XML_GET_STRING(node_device_item, "Name", client_info->name, temp_node, temp_text);
         XML_GET_STRING(node_device_item, "Manufacturer", client_info->manufacturer, temp_node, temp_text);
         XML_GET_STRING(node_device_item, "Model", client_info->model, temp_node, temp_text);
