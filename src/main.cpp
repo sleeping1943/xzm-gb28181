@@ -21,7 +21,7 @@ boost::interprocess::interprocess_semaphore semaphore(0);
 
 void quit_server(int) {
   Xzm::Server::is_server_quit.store(true);
-  CLOGI(RED, "ready to quit server!!");
+  LOG(INFO) << "ready to quit server!!";
   semaphore.post();
 }
 
@@ -47,26 +47,26 @@ int main(int argc, char **argv) {
 #endif
   Xzm::util::read_file(kConfPath, content);
   if (!gConfigPtr->Parse(content)) {
-    LOGE("%s", fmt::format("parse config[{}] error", kConfPath).c_str());
+    LOG(ERROR) << fmt::format("parse config[{}] error", kConfPath.c_str());
     return -1;
   }
   // 启动sip服务
   if (!Xzm::Server::instance()->Init(kConfPath)) {
-    LOGE("init server error!");
+    LOG(ERROR) << "init server error!";
     return -1;
   }
   if (!Xzm::Server::instance()->Start()) {
-    LOGE("start server error!");
+    LOG(INFO) << "start server error!";
     return -1;
   }
-  CLOGI(BLUE, "s_info_:%s", gServerInfo.str().c_str());
+  LOG(INFO) << "s_info_:%s", gServerInfo.str().c_str();
   if (!Xzm::XHttpServer::instance()->Init(kConfPath)) {
-    LOGE("init http_server error!");
+    LOG(ERROR) << "init http_server error!";
     return -2;
   }
   // 启动http服务
   if (!Xzm::XHttpServer::instance()->Start()) {
-    LOGE("start http_server error!");
+    LOG(ERROR) << "start http_server error!";
     return -2;
   }
   // 启动删除文件线程
@@ -79,7 +79,8 @@ int main(int argc, char **argv) {
         boost::get_system_time() +
         boost::posix_time::milliseconds(interval * 1000);
     while (!Xzm::Server::is_server_quit && !Xzm::Server::is_client_all_quit) {
-      CLOGI(YELLOW, "wait for server quit[%ds interval]...", interval);
+      LOG(INFO) << fmt::format("wait for server quit[{}s interval]...",
+                               interval);
       // std::this_thread::sleep_for(std::chrono::milliseconds(interval *
       // 1000));
       semaphore.timed_wait(wait_time);
@@ -87,21 +88,19 @@ int main(int argc, char **argv) {
                   boost::posix_time::milliseconds(interval * 1000);
     }
   } catch (std::exception &e) {
-    std::stringstream ss;
-    ss << "there is a error:" << e.what();
-    LOGE("%s", ss.str().c_str());
+    LOG(ERROR) << fmt::format("this is an error:{}", e.what());
   }
   // 关闭删除文件线程
-  CLOGI(RED, "%s", "ready to quit thread[deleter]");
+  LOG(INFO) << "ready to quit thread[deleter]";
   Xzm::XDeleter::instance()->Stop();
-  CLOGI(GREEN, "%s", "already quit thread[deleter]");
+  LOG(INFO) << "already quit thread[deleter]";
   // 关闭sip和http服务
-  CLOGI(RED, "%s", "ready to quit thread[SipServer]");
+  LOG(INFO) << "ready to quit thread[SipServer]";
   Xzm::Server::instance()->Stop();
-  CLOGI(GREEN, "%s", "already quit thread[SipServer]");
-  CLOGI(RED, "%s", "ready to quit thread[HttpServer]");
+  LOG(INFO) << "already quit thread[SipServer]";
+  LOG(INFO) << "ready to quit thread[HttpServer]";
   Xzm::XHttpServer::instance()->Stop();
-  CLOGI(GREEN, "%s", "already quit thread[HttpServer]");
-  LOG_RED("quit server gracefully!!");
+  LOG(INFO) << "already quit thread[HttpServer]";
+  LOG(INFO) << "quit server gracefully!!";
   return 0;
 }

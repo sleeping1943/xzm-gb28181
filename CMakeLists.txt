@@ -18,6 +18,7 @@ target_include_directories(gb28181-server PRIVATE
 target_compile_definitions(gb28181-server PRIVATE
     LINUX
     FMT_HEADER_ONLY
+    ELPP_THREAD_SAFE
 )
 target_compile_options(gb28181-server PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-m64>
@@ -60,25 +61,26 @@ target_link_options(gb28181-server PRIVATE
 )
 target_sources(gb28181-server PRIVATE
     src/main.cpp
-    src/deleter.cpp
     src/server.cpp
+    src/deleter.cpp
     src/xzm_defines.cpp
-    src/event_handler/call_message_answer_handler.cpp
+    src/event_handler/handler.cpp
     src/event_handler/call_answer_handler.cpp
     src/event_handler/register_handler.cpp
-    src/event_handler/handler.cpp
     src/event_handler/invite_handler.cpp
+    src/event_handler/call_message_answer_handler.cpp
     src/http/http_server.cpp
     src/utils/singleton.cpp
-    src/utils/json_helper.cpp
-    src/utils/http_digest.cpp
-    src/utils/chinese.cpp
-    src/utils/helper.cpp
-    src/utils/tinyxml2.cpp
-    src/utils/_md5.cpp
-    src/utils/md5.cpp
     src/utils/config.cpp
     src/utils/timer.cpp
+    src/utils/_md5.cpp
+    src/utils/json_helper.cpp
+    src/utils/tinyxml2.cpp
+    src/utils/http_digest.cpp
+    src/utils/helper.cpp
+    src/utils/chinese.cpp
+    src/utils/md5.cpp
     src/msg_builder/msg_builder.cpp
+    src/easylogging/easylogging++.cc
 )
 

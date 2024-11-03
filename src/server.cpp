@@ -1,12 +1,12 @@
 #include "server.h"
 #include "event_handler/handler.h"
 #include "utils/helper.h"
-#include "utils/log.h"
 
 #include "event_handler/call_answer_handler.h"
 #include "event_handler/call_message_answer_handler.h"
 #include "event_handler/invite_handler.h"
 #include "event_handler/register_handler.h"
+#include "fmt/format.h"
 #include "utils/config.h"
 #include "xzm_defines.h"
 #include <functional>
@@ -59,7 +59,7 @@ bool Server::init_sip_server() {
   */
   sip_context_ = eXosip_malloc();
   if (!sip_context_) {
-    LOG("eXosip_malloc error!");
+    LOG(ERROR) << "eXosip_malloc error!";
     return false;
   }
   /*
@@ -67,7 +67,7 @@ bool Server::init_sip_server() {
    初始化
   */
   if (eXosip_init(sip_context_)) {
-    LOG("eXosip_init error");
+    LOG(ERROR) << "eXosip_init error";
     return false;
   }
   /*
@@ -76,7 +76,7 @@ bool Server::init_sip_server() {
    */
   if (eXosip_listen_addr(sip_context_, IPPROTO_UDP, nullptr, gServerInfo.port,
                          AF_INET, 0)) {
-    LOG("eXosip_listen_addr error");
+    LOG(ERROR) << "eXosip_listen_addr error";
     return false;
   }
 
@@ -88,7 +88,7 @@ bool Server::init_sip_server() {
   if (eXosip_add_authentication_info(
           sip_context_, gServerInfo.sip_id.c_str(), gServerInfo.sip_id.c_str(),
           gServerInfo.passwd.c_str(), nullptr, gServerInfo.realm.c_str())) {
-    LOG("eXosip_add_authentication_info error");
+    LOG(ERROR) << "eXosip_add_authentication_info error";
     return false;
   }
   return true;
@@ -106,7 +106,7 @@ bool Server::Stop() {
   is_quit_.store(true);
   if (thread_.joinable()) {
     thread_.join();
-    LOGI("quit server thread");
+    LOG(INFO) << "quit server thread";
   }
   return true;
 }
@@ -212,7 +212,7 @@ bool Server::RemoveClient(const std::string &device) {
 void Server::ClearClient() {
   ReadLock _lock(client_mutex_);
   clients_.clear();
-  LOGI("already quit all clients...");
+  LOG(INFO) << "already quit all clients...";
   return;
 }
 
@@ -317,7 +317,8 @@ void Server::DelLivingInfoPtr(const std::string &stream_id) {
           living_ptr->talk_port <= gMediaServerInfo.rtp_proxy_port_max) {
         ReleaseTalkPort(living_ptr->talk_port);
       } else {
-        LOGE("can not release talk_port[%d]", living_ptr->talk_port);
+        LOG(ERROR) << fmt::format("can not release talk_port[{}]",
+                                  living_ptr->talk_port);
       }
       break;
     case kLivingTypeMax:
@@ -412,7 +413,7 @@ bool Server::run() {
       ReadLock _lock(client_mutex_);
       if (is_quit_) {
         is_client_all_quit = true;
-        LOGI("aleady quit all clients......");
+        LOG(INFO) << "aleady quit all clients......";
         break;
       }
     }
@@ -438,7 +439,7 @@ bool Server::run() {
     }
     eXosip_event_free(evtp); // 释放事件所占资源
   }
-  LOG_RED("Server ready to exit!");
+  LOG(INFO) << "Server ready to exit!";
   // ClearClient();
   return true;
 }
@@ -478,48 +479,50 @@ int Server::process_http_request() {
     case kRequestTypeNone:
       break;
     case kRequestTypeInvite: // 建立会话请求
-      CLOGI(RED, "process request send invite................................");
+      LOG(INFO)
+          << "process request send invite................................";
       kDefaultHandler->request_invite(sip_context_, client_req);
       break;
     case kRequestTypeMax:
       break;
     case kRequestTypeCancel:
-      CLOGI(RED,
-            "process request cancel invite................................");
+      LOG(INFO)
+          << "process request cancel invite................................";
       kDefaultHandler->request_cancel_invite(sip_context_, client_req);
       break;
     case kRequestTypeTalk: // 开启对话请求
-      CLOGI(RED, "process request send invite................................");
+      LOG(INFO)
+          << "process request send invite................................";
       kDefaultHandler->request_invite_talk(sip_context_, client_req);
       break;
     case kRequestTypeCancelTalk:
       break;
     case kRequestTypeBroadcast:
-      CLOGI(RED, "process request broadcast..................................");
+      LOG(INFO)
+          << "process request broadcast..................................";
       kDefaultHandler->request_broadcast(sip_context_, client_req);
       break;
     case kRequestTypeScanDevice:
-      CLOGI(RED,
-            "process request scan device..................................");
+      LOG(INFO)
+          << "process request scan device..................................";
       kDefaultHandler->request_device_query(sip_context_, client_req);
       break;
     case kRequestTypeQueryLibrary:
-      CLOGI(RED,
-            "process request query library..................................");
+      LOG(INFO)
+          << "process request query library..................................";
       break;
     case kRequestTypeRefreshLibrary:
-      CLOGI(
-          RED,
-          "process request refresh library..................................");
+      LOG(INFO) << "process request refresh "
+                   "library..................................";
       kDefaultHandler->request_refresh_device_library(sip_context_, client_req);
       break;
     case kRequestTypePlayback:
-      CLOGI(RED, "process request playback..................................");
+      LOG(INFO) << "process request playback..................................";
       kDefaultHandler->request_invite_playback(sip_context_, client_req);
       break;
     case kRequestTypeFastforwardPlayback:
-      CLOGI(RED, "process request fast forward "
-                 "playback..................................");
+      LOG(INFO) << "process request fast forward "
+                   "playback..................................";
       kDefaultHandler->request_fast_forward(sip_context_, client_req);
       break;
     default:
