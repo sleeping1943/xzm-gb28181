@@ -1,4 +1,5 @@
 #include "deleter.h"
+#include "easylogging/easylogging++.h"
 #include "fmt/format.h"
 #include "http/http_server.h"
 #include "server.h"
@@ -12,6 +13,8 @@
 #include <boost/thread/thread_time.hpp>
 #include <signal.h>
 
+INITIALIZE_EASYLOGGINGPP
+
 const static std::string kConfPath = "./conf/config.json";
 
 boost::interprocess::interprocess_semaphore semaphore(0);
@@ -23,6 +26,12 @@ void quit_server(int) {
 }
 
 int main(int argc, char **argv) {
+
+  // 日志配置
+  el::Loggers::addFlag(el::LoggingFlag::StrictLogFileSizeCheck);
+  el::Configurations conf("./log.conf");
+  el::Loggers::reconfigureAllLoggers(conf);
+
   setlocale(
       LC_CTYPE,
       ""); // 使ansi编码有效,用于utf8和ansi转码,但是所有lib都会受影响,有风险

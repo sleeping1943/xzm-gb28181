@@ -5,12 +5,19 @@ target("gb28181-server")
 set_default(true)
 set_enabled(true)
 set_kind("binary")
-add_files("src/*.cpp", "src/event_handler/**.cpp", "src/http/**.cpp", "src/utils/**.cpp", "src/msg_builder/**.cpp")
+add_files(
+	"src/*.cpp",
+	"src/event_handler/**.cpp",
+	"src/http/**.cpp",
+	"src/utils/**.cpp",
+	"src/msg_builder/**.cpp",
+	"src/easylogging/**.cc"
+)
 
 set_targetdir("./")
 --add_cflags("-g")
 if is_os("linux") then
-	add_defines("LINUX", "FMT_HEADER_ONLY")
+	add_defines("LINUX", "FMT_HEADER_ONLY", "ELPP_THREAD_SAFE")
 	print("current os is linux")
 	set_languages("c++11")
 	add_cxxflags("-O0", "-Wall", "-g2", "-ggdb")
@@ -31,13 +38,13 @@ if is_os("linux") then
 	add_syslinks("pthread")
 elseif is_os("windows") then
 	print("current os is Windows")
-	add_defines("WIN32", "FMT_HEADER_ONLY")
+	add_defines("WIN32", "FMT_HEADER_ONLY", "ELPP_THREAD_SAFE")
 	add_includedirs("./", "E:/sleeping/3rd_lib/include", "E:/sleeping/code/vcpkg/installed/x64-windows/include")
 
 	add_linkdirs(
 		"E:/sleeping/3rd_lib/lib",
 		"E:/sleeping/code/vcpkg/installed/x64-windows/lib",
-		"E:/sleeping/code/vcpkg/installed/x64-windows/bin"
+		p("E:/sleeping/code/vcpkg/installed/x64-windows/bin")
 	)
 
 	add_links(
@@ -54,4 +61,3 @@ elseif is_os("windows") then
 else
 	print("unsuppported os!")
 end
-
