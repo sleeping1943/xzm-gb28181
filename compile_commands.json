@@ -1,111 +1,111 @@
 [
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o", "src/main.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/main.cpp.o", "src/main.cpp"],
   "file": "src/main.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o", "src/server.cpp"],
-  "file": "src/server.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o", "src/deleter.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/deleter.cpp.o", "src/deleter.cpp"],
   "file": "src/deleter.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o", "src/xzm_defines.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/server.cpp.o", "src/server.cpp"],
+  "file": "src/server.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/xzm_defines.cpp.o", "src/xzm_defines.cpp"],
   "file": "src/xzm_defines.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o", "src/event_handler/handler.cpp"],
-  "file": "src/event_handler/handler.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o", "src/event_handler/call_answer_handler.cpp"],
-  "file": "src/event_handler/call_answer_handler.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o", "src/event_handler/register_handler.cpp"],
-  "file": "src/event_handler/register_handler.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o", "src/event_handler/invite_handler.cpp"],
-  "file": "src/event_handler/invite_handler.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o", "src/event_handler/call_message_answer_handler.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_message_answer_handler.cpp.o", "src/event_handler/call_message_answer_handler.cpp"],
   "file": "src/event_handler/call_message_answer_handler.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o", "src/http/http_server.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/call_answer_handler.cpp.o", "src/event_handler/call_answer_handler.cpp"],
+  "file": "src/event_handler/call_answer_handler.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/register_handler.cpp.o", "src/event_handler/register_handler.cpp"],
+  "file": "src/event_handler/register_handler.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/handler.cpp.o", "src/event_handler/handler.cpp"],
+  "file": "src/event_handler/handler.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/event_handler/invite_handler.cpp.o", "src/event_handler/invite_handler.cpp"],
+  "file": "src/event_handler/invite_handler.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/http/http_server.cpp.o", "src/http/http_server.cpp"],
   "file": "src/http/http_server.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o", "src/utils/singleton.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/singleton.cpp.o", "src/utils/singleton.cpp"],
   "file": "src/utils/singleton.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o", "src/utils/config.cpp"],
-  "file": "src/utils/config.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o", "src/utils/timer.cpp"],
-  "file": "src/utils/timer.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o", "src/utils/_md5.cpp"],
-  "file": "src/utils/_md5.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o", "src/utils/json_helper.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/json_helper.cpp.o", "src/utils/json_helper.cpp"],
   "file": "src/utils/json_helper.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o", "src/utils/tinyxml2.cpp"],
-  "file": "src/utils/tinyxml2.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o", "src/utils/http_digest.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/http_digest.cpp.o", "src/utils/http_digest.cpp"],
   "file": "src/utils/http_digest.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o", "src/utils/helper.cpp"],
-  "file": "src/utils/helper.cpp"
-},
-{
-  "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o", "src/utils/chinese.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/chinese.cpp.o", "src/utils/chinese.cpp"],
   "file": "src/utils/chinese.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o", "src/utils/md5.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/helper.cpp.o", "src/utils/helper.cpp"],
+  "file": "src/utils/helper.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/tinyxml2.cpp.o", "src/utils/tinyxml2.cpp"],
+  "file": "src/utils/tinyxml2.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/_md5.cpp.o", "src/utils/_md5.cpp"],
+  "file": "src/utils/_md5.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/md5.cpp.o", "src/utils/md5.cpp"],
   "file": "src/utils/md5.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o", "src/msg_builder/msg_builder.cpp"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/config.cpp.o", "src/utils/config.cpp"],
+  "file": "src/utils/config.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/utils/timer.cpp.o", "src/utils/timer.cpp"],
+  "file": "src/utils/timer.cpp"
+},
+{
+  "directory": "/home/sleeping/code/xzm-gb28181",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/msg_builder/msg_builder.cpp.o", "src/msg_builder/msg_builder.cpp"],
   "file": "src/msg_builder/msg_builder.cpp"
 },
 {
   "directory": "/home/sleeping/code/xzm-gb28181",
-  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/easylogging/easylogging++.cc.o", "src/easylogging/easylogging++.cc"],
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-std=c++11", "-I.", "-I/usr/local/include", "-DLINUX", "-DFMT_HEADER_ONLY", "-DELPP_THREAD_SAFE", "-DELPP_NO_DEFAULT_LOG_FILE", "-O0", "-Wall", "-g2", "-ggdb", "-o", "build/.objs/gb28181-server/linux/x86_64/debug/src/easylogging/easylogging++.cc.o", "src/easylogging/easylogging++.cc"],
   "file": "src/easylogging/easylogging++.cc"
 }]

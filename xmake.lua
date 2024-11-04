@@ -17,7 +17,7 @@ add_files(
 set_targetdir("./")
 --add_cflags("-g")
 if is_os("linux") then
-	add_defines("LINUX", "FMT_HEADER_ONLY", "ELPP_THREAD_SAFE")
+	add_defines("LINUX", "FMT_HEADER_ONLY", "ELPP_THREAD_SAFE", "ELPP_NO_DEFAULT_LOG_FILE")
 	print("current os is linux")
 	set_languages("c++11")
 	add_cxxflags("-O0", "-Wall", "-g2", "-ggdb")
@@ -38,7 +38,7 @@ if is_os("linux") then
 	add_syslinks("pthread")
 elseif is_os("windows") then
 	print("current os is Windows")
-	add_defines("WIN32", "FMT_HEADER_ONLY", "ELPP_THREAD_SAFE")
+	add_defines("WIN32", "FMT_HEADER_ONLY", "ELPP_THREAD_SAFE", "ELPP_NO_DEFAULT_LOG_FILE")
 	add_includedirs("./", "E:/sleeping/3rd_lib/include", "E:/sleeping/code/vcpkg/installed/x64-windows/include")
 
 	add_linkdirs(

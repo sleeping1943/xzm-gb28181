@@ -930,23 +930,27 @@ int Handler::parse_recordinfo_xml(const std::string &xml_str,
 void Handler::dump_request(eXosip_event_t *evtp) {
   char *s;
   size_t len;
-  osip_message_to_str(evtp->request, &s, &len);
-  LOG(INFO) << fmt::format(
-      "\n********************print request "
-      "start\ttype={}********************\n{}\n********************print "
-      "request end********************\n",
-      (int)evtp->type, s);
+  if (evtp && evtp->request) {
+    osip_message_to_str(evtp->request, &s, &len);
+    LOG(INFO) << fmt::format(
+        "\n********************print request "
+        "start\ttype={}********************\n{}\n********************print "
+        "request end********************\n",
+        (int)evtp->type, s);
+  }
 }
 
 void Handler::dump_response(eXosip_event_t *evtp) {
   char *s;
   size_t len;
-  osip_message_to_str(evtp->response, &s, &len);
-  LOG(INFO) << fmt::format(
-      "\n********************print response "
-      "start\ttype={}********************\n{}\n********************print "
-      "response end********************\n",
-      (int)evtp->type, s);
+  if (evtp && evtp->response) {
+    osip_message_to_str(evtp->response, &s, &len);
+    LOG(INFO) << fmt::format(
+        "\n********************print response "
+        "start\ttype={}********************\n{}\n********************print "
+        "response end********************\n",
+        (int)evtp->type, s);
+  }
 }
 
 int Handler::get_random_sn() {

@@ -2,6 +2,7 @@
 #include "easylogging/easylogging++.h"
 #include "fmt/format.h"
 #include "http/http_server.h"
+#include "hv/hlog.h"
 #include "server.h"
 #include "utils/config.h"
 #include "utils/helper.h"
@@ -12,6 +13,7 @@
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include <boost/thread/thread_time.hpp>
 #include <signal.h>
+#include <unistd.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -27,10 +29,19 @@ void quit_server(int) {
 
 int main(int argc, char **argv) {
 
+  // hlog_set_file("log/hv.log");
+  hlog_disable();
   // 日志配置
   el::Loggers::addFlag(el::LoggingFlag::StrictLogFileSizeCheck);
   el::Configurations conf("./log.conf");
   el::Loggers::reconfigureAllLoggers(conf);
+
+  // int ret = 0;
+  // if ((ret = daemon(1, 0)) != 0) {
+  //   LOG(ERROR) << fmt::format("Start gb28181 with daemon mode error:{}",
+  //   ret); return -1;
+  // }
+  LOG(INFO) << fmt::format("{} Started with daemon mode succefully!", argv[0]);
 
   setlocale(
       LC_CTYPE,
@@ -47,7 +58,8 @@ int main(int argc, char **argv) {
 #endif
   Xzm::util::read_file(kConfPath, content);
   if (!gConfigPtr->Parse(content)) {
-    LOG(ERROR) << fmt::format("parse config[{}] error", kConfPath.c_str());
+    LOG(ERROR) << fmt::format("parse config[{}] error,content:{}", kConfPath,
+                              content);
     return -1;
   }
   // 启动sip服务
