@@ -2,6 +2,7 @@
 #include "easylogging/easylogging++.h"
 #include "fmt/format.h"
 #include "http/http_server.h"
+#include "hv/HttpClient.h"
 #include "hv/hlog.h"
 #include "server.h"
 #include "utils/config.h"
@@ -61,6 +62,34 @@ int main(int argc, char **argv) {
     LOG(ERROR) << fmt::format("parse config[{}] error,content:{}", kConfPath,
                               content);
     return -1;
+  }
+  // 检测ZLMediakit时候已开启
+  {
+    HttpRequest req;
+    req.method = HTTP_GET;
+    req.url = fmt::format("{}/index/api/version?secret={}",
+                          gMediaServerInfo.rtp_ip, gMediaServerInfo.secret);
+    HttpResponse res;
+    int ret = http_client_send(&req, &res);
+    if (ret != 0) {
+      LOG(ERROR) << "ZLMediakit未能正常运行!";
+      return -1;
+    }
+    int code = 0;
+    auto ret_json = res.GetJson();
+    HV_JSON_GET_INT(ret_json, code, "code");
+    if (code) {
+      LOG(ERROR) << "未能正确获取ZLMediakit版本";
+      return -1;
+    } else {
+      auto data_json = ret_json["data"];
+      std::string branch_name, build_time, commit_hash;
+      HV_JSON_GET_STRING(data_json, branch_name, "branchName");
+      HV_JSON_GET_STRING(data_json, build_time, "buildTime");
+      HV_JSON_GET_STRING(data_json, commit_hash, "commitHash");
+      LOG(INFO) << fmt::format("brancName:{}\tbuild_time:{}\tcommit_hash:{}\n",
+                               branch_name, build_time, commit_hash);
+    }
   }
   // 启动sip服务
   if (!Xzm::Server::instance()->Init(kConfPath)) {
