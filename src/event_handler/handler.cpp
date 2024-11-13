@@ -183,6 +183,14 @@ void Handler::response_keepalive(eXosip_event_t *evtp, eXosip_t *sip_context_,
   this->response_message_answer(evtp, sip_context_, 200);
 }
 
+void Handler::response_alarm(eXosip_event_t *evtp, eXosip_t *sip_context_,
+                             int code, std::shared_ptr<boost::any> param) {
+  osip_body_t *body = nullptr;
+  osip_message_get_body(evtp->request, 0, &body);
+  parse_device_xml(body->body);
+  this->response_message_answer(evtp, sip_context_, 200);
+}
+
 int Handler::request_invite(eXosip_t *sip_context, ClientRequestPtr req) {
   char session_exp[1024] = {0};
   osip_message_t *msg = nullptr;
@@ -797,6 +805,49 @@ int Handler::parse_device_xml(const std::string &xml_str) {
                              client_info->secrecy, client_info->status);
   } while (node_device_item);
   Server::instance()->UpdateClientInfo(device_id, client_infos);
+  return 0;
+}
+
+int Handler::parse_alarm_xml(const std::string &xml_str) {
+  if (xml_str.empty()) {
+    LOG(ERROR) << "报文为空";
+    return -1;
+  }
+  tinyxml2::XMLDocument doc;
+  auto ret = doc.Parse(xml_str.c_str());
+  if (ret != XMLError::XML_SUCCESS) {
+    LOG(ERROR) << "parse device xml error!";
+    return -1;
+  }
+  // 根元素
+  XMLElement *root = doc.RootElement();
+  // 指定名字的第一个子元素
+  XMLElement *node_alarm_info = root->FirstChildElement("Notify");
+  if (!node_alarm_info) {
+    LOG(ERROR) << "节点获取错误";
+    return -2;
+  }
+  int index = 0;
+  std::string temp_str;
+  std::unordered_map<std::string, ClientInfoPtr>
+      client_infos; // <device_id, client_info>
+  XMLElement *temp_node = nullptr;
+  const char *temp_text = nullptr;
+  std::string device_id, alarm_time;
+  int alarm_priority = 0, alarm_method = 0;
+  do {
+    ClientInfoPtr client_info = std::make_shared<ClientInfo>();
+    client_info->camera_manufacturer = kCameraManufacturerNone;
+    XML_GET_STRING(node_alarm_info, "DeviceID", device_id, temp_node,
+                   temp_text);
+    XML_GET_STRING(node_alarm_info, "AlarmTime", alarm_time, temp_node,
+                   temp_text);
+    XML_GET_INT(node_alarm_info, "AlarmPriority", alarm_priority, temp_node,
+                temp_text);
+    XML_GET_INT(node_alarm_info, "AlarmMethod", alarm_method, temp_node,
+                temp_text);
+  } while (0);
+  // TODO  告警信息后续如何处理
   return 0;
 }
 

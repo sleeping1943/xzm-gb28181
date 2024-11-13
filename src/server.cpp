@@ -48,6 +48,7 @@ bool Server::Init(const std::string &conf_path) {
                         kDefaultHandler)
   REGISTER_MSG_RESPONSE("Keepalive", &Handler::response_keepalive,
                         kDefaultHandler)
+  REGISTER_MSG_RESPONSE("Alarm", &Handler::response_alarm, kDefaultHandler)
   END_REGISTER_MSG_RESPONSE()
   return true;
 }

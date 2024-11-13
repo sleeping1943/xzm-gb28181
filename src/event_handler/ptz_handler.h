@@ -40,7 +40,6 @@ public:
    * @param sip_context [sip上下文]
    * @param ptr [客户端请求参数]
    */
-
   void request_ptz_with_ack(eXosip_t *sip_context, ClientRequestPtr ptr);
 
 private:

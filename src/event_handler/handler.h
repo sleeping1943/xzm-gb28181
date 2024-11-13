@@ -65,6 +65,14 @@ public:
                 const char *e_mark, bool with_e_make, char *dest);
 
   int parse_device_xml(const std::string &xml_str);
+
+  /**
+   * @brief 解析报警报文
+   *
+   * @param str_xml [报警报文]
+   * @return [0-正常解析]
+   */
+  int parse_alarm_xml(const std::string &str_xml);
   /**
    * @brief 解析历史录像记录
    *
@@ -89,6 +97,9 @@ public:
                            int code, std::shared_ptr<boost::any> param);
   void response_keepalive(eXosip_event_t *evtp, eXosip_t *sip_context_,
                           int code, std::shared_ptr<boost::any> param);
+
+  void response_alarm(eXosip_event_t *evtp, eXosip_t *sip_context_, int code,
+                      std::shared_ptr<boost::any> param);
 
 private:
   std::atomic_bool is_print;

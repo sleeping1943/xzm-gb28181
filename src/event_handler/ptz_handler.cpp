@@ -77,7 +77,7 @@ void PtzHandler::request_ptz_with_ack(eXosip_t *sip_context,
                   "<DeviceID>{}</DeviceID>"
                   "<RecordCmd>{}</RecordCmd>"
                   "</Control>",
-                  get_random_sn(), client->device.c_str(), record_cmd, 5);
+                  get_random_sn(), client->device.c_str(), record_cmd);
 
   osip_message_t *message = nullptr;
   eXosip_message_build_request(sip_context, &message, "MESSAGE", str_to.c_str(),
@@ -176,4 +176,4 @@ std::string PtzHandler::generate_ptz_cmd(ClientRequestPtr req) {
   return str_cmd;
 }
 
-std::string PtzHandler::generate_record_cmd(ClientRequestPtr) {}
+std::string PtzHandler::generate_record_cmd(ClientRequestPtr req) {}
