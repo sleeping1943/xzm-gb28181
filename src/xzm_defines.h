@@ -121,6 +121,19 @@ namespace Xzm {
     }                                                                          \
   }
 
+#define PTZCMDLENGTH 8
+
+#define CHECK_CLIENT_VALID(client_ptr, device_id, resp, err_code, err_str)     \
+  client_ptr = Server::instance()->FindClientEx(device_id);                    \
+  if (!client_ptr) {                                                           \
+    return resp->String(get_simple_info(err_code, err_str));                   \
+  }
+
+#define CHECK_POINTER_VALID(p, err_code)                                       \
+  if (!p) {                                                                    \
+    return err_code;                                                           \
+  }
+
 using DeviceID = std::string;
 
 /* 读写锁定义 */
@@ -183,7 +196,7 @@ enum HttpCode {
       407, // 请求要求代理的身份认证，与401类似，但请求者应当使用代理进行授权
   kHttpRequestTimeOut = 408, // 服务器等待客户端发送的请求时间过长，超时
   kHttpConflict = 409,       // 服务器完成客户端的 PUT
-                       // 请求时可能返回此代码，服务器处理请求时发生了冲突
+                             // 请求时可能返回此代码，服务器处理请求时发生了冲突
   kHttpGone =
       410, // 客户端请求的资源已经不存在。410不同于404，如果资源以前有现在被永久删除了可使用410代码，网站设计人员可通过301代码指定资源的新位置
   kHttpLengthRequired =
@@ -236,6 +249,7 @@ enum RequestType {
   kRequestTypeQueryLibrary,        // 查询设备目录
   kRequestTypePlayback,            // 历史录像回放
   kRequestTypeFastforwardPlayback, // 快进历史录像
+  kRequestTypeCameraPtz,           // 摄像头云台控制
   kRequestTypeMax = 9999,
 
 };
@@ -261,6 +275,23 @@ enum LivingType {
   kLivingTypeAudio,     // 音频流
   kLivingTypeTalkAudio, // 对讲音频流
   kLivingTypeMax,
+};
+
+/* 摄像头控制命令 */
+enum PTZControlType {
+  kPTZ_CTRL_NONE = 0,  // 停止
+  kPTZ_CTRL_RIGHT,     // 右转
+  kPTZ_CTRL_RIGHTUP,   // 右上
+  kPTZ_CTRL_UP,        // 上转
+  kPTZ_CTRL_LEFTUP,    // 左上
+  kPTZ_CTRL_LEFT,      // 左转
+  kPTZ_CTRL_LEFTDOWN,  // 左下
+  kPTZ_CTRL_DOWN,      // 下转
+  kPTZ_CTRL_RIGHTDOWN, // 右下
+  kPTZ_CTRL_ZOOM,      // 镜头放大/缩小
+  kPTZ_CTRL_IRIS,      // 光圈放大/缩小
+  kPTZ_CTRL_FOCUS,     // 镜头聚焦/放焦
+  kPTZ_CTRL_MAX
 };
 
 /* 实时流信息 */
@@ -478,6 +509,16 @@ struct RequestParamFastforward : public RequestParam {
   std::string ssrc;
 };
 using RequestParamFastforwardPtr = std::shared_ptr<RequestParamFastforward>;
+
+/* PTZ控制命令参数 */
+struct RequestParamPTZ : public RequestParam {
+  RequestParamPTZ() {}
+  virtual ~RequestParamPTZ() {}
+
+  PTZControlType cmd_type;
+  int value;
+};
+using RequestParamPTZPtr = std::shared_ptr<RequestParamPTZ>;
 
 struct ClientRequest {
   ClientPtr client_ptr;

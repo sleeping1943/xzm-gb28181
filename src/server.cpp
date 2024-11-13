@@ -23,6 +23,7 @@ GET http://10.23.132.54:18080/query_device
 namespace Xzm {
 
 HandlerPtr Server::kDefaultHandler = std::make_shared<Handler>();
+PtzHandlerPtr Server::kPtzHandler = std::make_shared<PtzHandler>();
 std::atomic_bool Server::is_server_quit(false);
 std::atomic_bool Server::is_client_all_quit(false);
 
@@ -469,7 +470,7 @@ bool Server::register_event_handler() {
 }
 
 int Server::process_http_request() {
-  if (!sip_context_ || !kDefaultHandler) {
+  if (!sip_context_) {
     return -1;
   }
   std::lock_guard<std::mutex> _lock(req_mutex_);
@@ -481,49 +482,55 @@ int Server::process_http_request() {
     case kRequestTypeInvite: // 建立会话请求
       LOG(INFO)
           << "process request send invite................................";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_invite(sip_context_, client_req);
       break;
     case kRequestTypeMax:
       break;
     case kRequestTypeCancel:
-      LOG(INFO)
-          << "process request cancel invite................................";
+      LOG(INFO) << "process request cancel invite";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_cancel_invite(sip_context_, client_req);
       break;
     case kRequestTypeTalk: // 开启对话请求
-      LOG(INFO)
-          << "process request send invite................................";
+      LOG(INFO) << "process request send invite";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_invite_talk(sip_context_, client_req);
       break;
     case kRequestTypeCancelTalk:
       break;
     case kRequestTypeBroadcast:
-      LOG(INFO)
-          << "process request broadcast..................................";
+      LOG(INFO) << "process request broadcast";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_broadcast(sip_context_, client_req);
       break;
     case kRequestTypeScanDevice:
-      LOG(INFO)
-          << "process request scan device..................................";
+      LOG(INFO) << "process request scan device";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_device_query(sip_context_, client_req);
       break;
     case kRequestTypeQueryLibrary:
-      LOG(INFO)
-          << "process request query library..................................";
+      LOG(INFO) << "process request query library";
       break;
     case kRequestTypeRefreshLibrary:
-      LOG(INFO) << "process request refresh "
-                   "library..................................";
+      LOG(INFO) << "process request refresh library";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_refresh_device_library(sip_context_, client_req);
       break;
     case kRequestTypePlayback:
-      LOG(INFO) << "process request playback..................................";
+      LOG(INFO) << "process request playback";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
       kDefaultHandler->request_invite_playback(sip_context_, client_req);
       break;
     case kRequestTypeFastforwardPlayback:
-      LOG(INFO) << "process request fast forward "
-                   "playback..................................";
+      CHECK_POINTER_VALID(kDefaultHandler, -1);
+      LOG(INFO) << "process request fast forward playback";
       kDefaultHandler->request_fast_forward(sip_context_, client_req);
+      break;
+    case kRequestTypeCameraPtz:
+      CHECK_POINTER_VALID(kPtzHandler, -1);
+      LOG(INFO) << "process request camera Ptz";
+      kPtzHandler->request_ptz_without_ack(sip_context_, client_req);
       break;
     default:
       break;

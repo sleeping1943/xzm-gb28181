@@ -10,6 +10,7 @@
  */
 #pragma once
 #include "event_handler/handler.h"
+#include "event_handler/ptz_handler.h"
 #include "utils/singleton.h"
 #include <atomic>
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
@@ -106,6 +107,7 @@ public:
 
 public:
   static HandlerPtr kDefaultHandler;
+  static PtzHandlerPtr kPtzHandler;
 
   std::map<std::string, bool>
       living_states_; // <id, state>

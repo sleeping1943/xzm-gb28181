@@ -41,7 +41,7 @@ Handler::~Handler() {}
 
 bool Handler::Process(eXosip_event_t *evtp, eXosip_t *sip_context_, int code) {
   is_print = true;
-  std::cout << "Handler Process!!" << std::endl;
+  // std::cout << "Handler Process!!" << std::endl;
   this->response_message(evtp, sip_context_, code);
   if (is_print) {
     this->dump_request(evtp);

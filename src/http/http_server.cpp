@@ -6,6 +6,7 @@
 #include "../utils/json_helper.h"
 #include "../utils/log.h"
 #include "../utils/timer.h"
+#include "../xzm_defines.h"
 #include "./fmt/format.h"
 #include "hv/hasync.h"
 #include "hv/requests.h"
@@ -65,6 +66,8 @@ bool XHttpServer::Init(const std::string &conf_path) {
                            fast_forward_playback, this);
   HV_REGISTER_SYNC_HANDLER(router, GET, "/check_stream", XHttpServer,
                            check_stream, this);
+  HV_REGISTER_SYNC_HANDLER(router, GET, "/send_camera_ptz_cmd", XHttpServer,
+                           send_camera_ptz_cmd, this);
   HV_REGISTER_SYNC_HANDLER(router, POST, "/on_publish", XHttpServer, on_publish,
                            this);
   HV_REGISTER_SYNC_HANDLER(router, POST, "/on_play", XHttpServer, on_play,
@@ -662,10 +665,44 @@ int XHttpServer::get_rtp_info(HttpRequest *req, HttpResponse *resp) {
   return kHttpOK;
 }
 
+int XHttpServer::send_camera_ptz_cmd(HttpRequest *req, HttpResponse *resp) {
+  std::string device_id = req->GetParam("device_id");
+  if (device_id.empty()) {
+    return resp->String(get_simple_info(400, "can not find param device_id!"));
+  }
+  std::string str_cmd_type = req->GetParam("cmd_type");
+  if (str_cmd_type.empty()) {
+    return resp->String(get_simple_info(400, "can not find param cmd_type!"));
+  }
+  std::string value = req->GetParam("value");
+  if (value.empty()) {
+    return resp->String(get_simple_info(400, "can not find param value!"));
+  }
+  auto client_ptr = Server::instance()->FindClientEx(device_id);
+  CHECK_CLIENT_VALID(client_ptr, device_id, resp, 400,
+                     fmt::format("can not find client with [{}]", device_id));
+  if (!client_ptr) {
+    return resp->String(get_simple_info(400, "can not find the device client"));
+  }
+  auto req_ptr = std::make_shared<ClientRequest>();
+  client_ptr->real_device_id = device_id;
+  req_ptr->client_ptr = client_ptr;
+  req_ptr->req_type = kRequestTypeCameraPtz;
+  auto param_ptr = std::make_shared<RequestParamPTZ>();
+  param_ptr->cmd_type = (PTZControlType)std::stoi(str_cmd_type);
+  param_ptr->value = std::stoi(value);
+  req_ptr->param_ptr = param_ptr;
+  Server::instance()->AddRequest(req_ptr);
+  resp->json["code"] = 0; // 鉴权成功
+  resp->json["data"]["device"] = device_id;
+  resp->json["data"]["action"] = "send_camera_ptz_cmd";
+  resp->json["msg"] = "success";
+  return kHttpOK;
+}
+
 int XHttpServer::on_publish(HttpRequest *req, HttpResponse *resp) {
-  LOG(INFO) << "http on "
-               "publish!!!-----------------------------------------------------"
-               "--------------";
+  LOG(INFO) << "******************************http on "
+               "publish!!!*********************************";
   LOG(INFO) << req->Dump(true, true);
   int port;
   std::string app, id, ip, params, schema, stream, vhost, media_server_id;
