@@ -1,4 +1,5 @@
 #include "xzm_defines.h"
+
 #include <memory>
 
 namespace Xzm {
@@ -18,7 +19,8 @@ XmlQueryLibraryParam::XmlQueryLibraryParam() : XmlQueryParam() {}
 
 XmlQueryLibraryParam::~XmlQueryLibraryParam() {}
 
-std::string XmlQueryInfo::BuildMsg(const XmlQueryParamPtr &msg_in) {
+std::string XmlQueryInfo::BuildMsg(const XmlQueryParamPtr &msg_in)
+{
   std::stringstream ss;
   ss << "<?xml version=\"1.0\"?>\r\n"
      << "<Query>\r\n"
@@ -29,19 +31,16 @@ std::string XmlQueryInfo::BuildMsg(const XmlQueryParamPtr &msg_in) {
   return ss.str();
 }
 
-std::string XmlQueryInfo::ExtroXmlQueryParamfo(const XmlQueryParamPtr &msg_in) {
-  return "";
-}
+std::string XmlQueryInfo::ExtroXmlQueryParamfo(const XmlQueryParamPtr &msg_in) { return ""; }
 
 XmlQueryLibraryInfo::XmlQueryLibraryInfo() {}
 
 XmlQueryLibraryInfo::~XmlQueryLibraryInfo() {}
 
-std::string
-XmlQueryLibraryInfo::ExtroXmlQueryParamfo(const XmlQueryParamPtr &msg_in) {
+std::string XmlQueryLibraryInfo::ExtroXmlQueryParamfo(const XmlQueryParamPtr &msg_in)
+{
   std::string xml_str;
-  XmlQueryLibraryParamPtr param_ptr =
-      std::dynamic_pointer_cast<XmlQueryLibraryParam>(msg_in);
+  XmlQueryLibraryParamPtr param_ptr = std::dynamic_pointer_cast<XmlQueryLibraryParam>(msg_in);
   if (!param_ptr) {
     return xml_str;
   }
@@ -67,4 +66,4 @@ XmlQueryLibraryInfo::ExtroXmlQueryParamfo(const XmlQueryParamPtr &msg_in) {
   xml_str = ss.str();
   return xml_str;
 }
-}; // namespace Xzm
+};  // namespace Xzm

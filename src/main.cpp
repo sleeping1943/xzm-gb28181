@@ -1,3 +1,11 @@
+#include <signal.h>
+#include <unistd.h>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#include <boost/thread/thread_time.hpp>
+
 #include "deleter.h"
 #include "easylogging/easylogging++.h"
 #include "fmt/format.h"
@@ -9,12 +17,6 @@
 #include "utils/helper.h"
 #include "utils/log.h"
 #include "xzm_defines.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/posix_time/posix_time_duration.hpp>
-#include <boost/interprocess/sync/interprocess_semaphore.hpp>
-#include <boost/thread/thread_time.hpp>
-#include <signal.h>
-#include <unistd.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -29,7 +31,6 @@ void quit_server(int) {
 }
 
 int main(int argc, char **argv) {
-
   // hlog_set_file("log/hv.log");
   hlog_disable();
   // 日志配置
@@ -46,7 +47,7 @@ int main(int argc, char **argv) {
 
   setlocale(
       LC_CTYPE,
-      ""); // 使ansi编码有效,用于utf8和ansi转码,但是所有lib都会受影响,有风险
+      "");  // 使ansi编码有效,用于utf8和ansi转码,但是所有lib都会受影响,有风险
   signal(SIGINT, quit_server);
   Xzm::Server::instance()->Test();
   std::string content;

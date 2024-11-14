@@ -4,33 +4,32 @@
  * @brief 删除截图的本地图片
  * @version 0.1
  * @date 2023-09-27
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
- #include "utils/singleton.h"
+#include <atomic>
 #include <queue>
- #include <thread>
- #include <atomic>
+#include <thread>
 
-namespace Xzm
-{
-class XDeleter : public util::Singleton<XDeleter>
-{
-public:
-    XDeleter();
-    ~XDeleter();
+#include "utils/singleton.h"
 
-    void Start();
-    void Stop();
-    void Run();
+namespace Xzm {
+class XDeleter : public util::Singleton<XDeleter> {
+  public:
+  XDeleter();
+  ~XDeleter();
 
-    std::string delete_time(int interval);
+  void Start();
+  void Stop();
+  void Run();
 
-private:
-    std::thread thread_;
-    std::atomic_bool is_stop;
-    std::string exe_path_;
-    std::string img_path_;
+  std::string delete_time(int interval);
+
+  private:
+  std::thread thread_;
+  std::atomic_bool is_stop;
+  std::string exe_path_;
+  std::string img_path_;
 };
-};
+};  // namespace Xzm

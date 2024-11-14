@@ -1,0 +1,201 @@
+---
+Language:        Cpp
+# BasedOnStyle:  Google
+# # 访问说明符(public,privat等)的偏移
+AccessModifierOffset: -4
+# 开括号(开圆括号，开尖括号，开方括号)后的对齐:Align，DontAlign, AlwaysBreak(总是在开括号后换行)
+AlignAfterOpenBracket: Align
+
+AlignConsecutiveMacros: false
+# 连续赋值,对齐所有等号
+AlignConsecutiveAssignments: false
+# 连续声明，对齐所有声明的变量名
+AlignConsecutiveDeclarations: false
+# 左对齐逃脱换行(使用反斜杠换行)的反斜杠
+AlignEscapedNewlines: Left
+# 水平对齐2元和3元表达式的操作数
+AlignOperands:   true
+# 对齐连续的尾随的注释
+AlignTrailingComments: true
+# 允许函数声明的所有参数在下一行
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+# 允许短的块放在同一行
+AllowShortBlocksOnASingleLine: Never
+# 允许短的case标签放在同一行
+AllowShortCaseLabelsOnASingleLine: false
+# 允许短的函数放在同一行
+AllowShortFunctionsOnASingleLine: All
+# 允许短的lambda函数放在同一行
+AllowShortLambdasOnASingleLine: All
+# 允许短的if语句放在同一行
+AllowShortIfStatementsOnASingleLine: WithoutElse
+# 允许短的循环语句放在同一行
+AllowShortLoopsOnASingleLine: true
+# 总是在定义返回类型后换行
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+# 总是在多行string字面量前换行
+AlwaysBreakBeforeMultilineStrings: true
+# 总是在template声明后换行
+AlwaysBreakTemplateDeclarations: Yes
+# false标识函数实参要么都在同一行,要么都各自一行
+BinPackArguments: true
+# false标识形参要么都在同一行,要么都各自一行
+BinPackParameters: true
+# 大括号换行，只有当BreakBeforeBraces设置为Custom时才有效
+BraceWrapping:
+  AfterCaseLabel:  false
+  # class定义后面
+  AfterClass:      false
+  # 控制语句后面
+  AfterControlStatement: false
+  # enum定义后面
+  AfterEnum:       true
+  # 函数定义后面
+  AfterFunction:   true
+  # 命名空间定义后面
+  AfterNamespace:  false
+  # ObjC定义后面
+  AfterObjCDeclaration: false
+  # Struct定义后面
+  AfterStruct:     true
+  # union定义后面
+  AfterUnion:      true
+  AfterExternBlock: false
+  # catch之前
+  BeforeCatch:     false
+  # else之前
+  BeforeElse:      false
+  # 缩进大括号
+  IndentBraces:    false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Custom
+BreakBeforeInheritanceComma: false
+BreakInheritanceList: BeforeColon
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializers: BeforeColon
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: true
+ColumnLimit:     120
+CommentPragmas:  '^ IWYU pragma:'
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+DeriveLineEnding: true
+DerivePointerAlignment: true
+DisableFormat:   false
+ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: true
+ForEachMacros:
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+IncludeBlocks:   Regroup
+IncludeCategories:
+  - Regex:           '^<ext/.*\.h>'
+    Priority:        2
+    SortPriority:    0
+  - Regex:           '^<.*\.h>'
+    Priority:        1
+    SortPriority:    0
+  - Regex:           '^<.*'
+    Priority:        2
+    SortPriority:    0
+  - Regex:           '.*'
+    Priority:        3
+    SortPriority:    0
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+IncludeIsMainSourceRegex: ''
+IndentCaseLabels: true
+IndentGotoLabels: true
+IndentPPDirectives: None
+IndentWidth:     2
+IndentWrappedFunctionNames: false
+JavaScriptQuotes: Leave
+JavaScriptWrapImports: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+MacroBlockBegin: ''
+MacroBlockEnd:   ''
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+ObjCBinPackProtocolList: Never
+ObjCBlockIndentWidth: 2
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerAlignment: Left
+RawStringFormats:
+  - Language:        Cpp
+    Delimiters:
+      - cc
+      - CC
+      - cpp
+      - Cpp
+      - CPP
+      - 'c++'
+      - 'C++'
+    CanonicalDelimiter: ''
+    BasedOnStyle:    google
+  - Language:        TextProto
+    Delimiters:
+      - pb
+      - PB
+      - proto
+      - PROTO
+    EnclosingFunctions:
+      - EqualsProto
+      - EquivToProto
+      - PARSE_PARTIAL_TEXT_PROTO
+      - PARSE_TEST_PROTO
+      - PARSE_TEXT_PROTO
+      - ParseTextOrDie
+      - ParseTextProtoOrDie
+    CanonicalDelimiter: ''
+    BasedOnStyle:    google
+ReflowComments:  true
+SortIncludes:    true
+SortUsingDeclarations: true
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles:  false
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceBeforeSquareBrackets: false
+# 标准:Cpp03 Cpp11 Auto
+Standard:        Cpp11
+StatementMacros:
+  - Q_UNUSED
+  - QT_REQUIRE_VERSION
+TabWidth:        4
+UseCRLF:         false
+UseTab:          Never
+...
+
