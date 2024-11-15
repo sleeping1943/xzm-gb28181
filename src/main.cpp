@@ -118,7 +118,7 @@ int main(int argc, char **argv)
         unsigned int interval = 5;
         boost::system_time wait_time = boost::get_system_time() + boost::posix_time::milliseconds(interval * 1000);
         while (!Xzm::Server::is_server_quit && !Xzm::Server::is_client_all_quit) {
-            LOG(INFO) << fmt::format("wait for server quit[{}s interval]...", interval);
+            LOG(DEBUG) << fmt::format("wait for server quit[{}s interval]...", interval);
             // std::this_thread::sleep_for(std::chrono::milliseconds(interval *
             // 1000));
             semaphore.timed_wait(wait_time);

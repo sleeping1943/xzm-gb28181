@@ -115,9 +115,9 @@ void Handler::response_message(eXosip_event_t *evtp, eXosip_t *sip_context_, int
 
     LOG(INFO) << fmt::format("CmdType={},DeviceID={}", CmdType, DeviceID);
     auto func = Server::instance()->GetMsgResponse(CmdType);
-    std::shared_ptr<boost::any> param_ptr = std::make_shared<boost::any>();
+    std::shared_ptr<boost::any> param_ptr = std::make_shared<boost::any>(std::string(DeviceID));
     if (func) {
-        func(evtp, sip_context_, 200, nullptr);
+        func(evtp, sip_context_, 200, param_ptr);
     } else {
         this->response_message_answer(evtp, sip_context_, 200);  // 默认处理
     }
@@ -181,8 +181,15 @@ void Handler::response_recordinfo(eXosip_event_t *evtp, eXosip_t *sip_context_, 
 void Handler::response_keepalive(eXosip_event_t *evtp, eXosip_t *sip_context_, int code,
                                  std::shared_ptr<boost::any> param)
 {
-    is_print = false;
-    this->response_message_answer(evtp, sip_context_, 200);
+    try {
+        is_print = false;
+        auto p = *param;
+        std::string device_id = boost::any_cast<std::string>(*param);
+        Server::instance()->UpdateClientAccessTime(device_id);
+        this->response_message_answer(evtp, sip_context_, 200);
+    } catch (const std::exception &e) {
+        LOG(ERROR) << fmt::format("发生异常:{}", e.what());
+    }
 }
 
 void Handler::response_alarm(eXosip_event_t *evtp, eXosip_t *sip_context_, int code, std::shared_ptr<boost::any> param)
@@ -638,6 +645,7 @@ int Handler::parse_device_xml(const std::string &xml_str)
         LOG(ERROR) << "parse device xml error!";
         return -1;
     }
+    LOG(DEBUG) << fmt::format("json_content:[{}], size:[{}]", xml_str, xml_str.size());
     // 根元素
     XMLElement *root = doc.RootElement();
     // 指定名字的第一个子元素

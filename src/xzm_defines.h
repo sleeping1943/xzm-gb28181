@@ -310,7 +310,8 @@ struct StreamInfo
 using StreamInfoPtr = std::shared_ptr<StreamInfo>;
 
 /* xml消息的查询参数信息 */
-class XmlQueryParam {
+class XmlQueryParam
+{
 public:
     XmlQueryParam();
     // XmlQueryParam(XmlQueryType _q_type, const std::string& _cmd, uint64_t _sn,
@@ -325,7 +326,8 @@ public:
 using XmlQueryParamPtr = std::shared_ptr<XmlQueryParam>;
 
 /* 文件检索参数 */
-class XmlQueryLibraryParam : public XmlQueryParam {
+class XmlQueryLibraryParam : public XmlQueryParam
+{
 public:
     XmlQueryLibraryParam();
     ~XmlQueryLibraryParam();
@@ -345,7 +347,8 @@ public:
 using XmlQueryLibraryParamPtr = std::shared_ptr<XmlQueryLibraryParam>;
 
 /* xml消息体 */
-class XmlQueryInfo {
+class XmlQueryInfo
+{
 public:
     XmlQueryInfo() {}
     virtual ~XmlQueryInfo() {}
@@ -356,7 +359,8 @@ public:
 using XmlQueryInfoPtr = std::shared_ptr<XmlQueryInfo>;
 
 /* 文件检索消息体 */
-class XmlQueryLibraryInfo : public XmlQueryInfo {
+class XmlQueryLibraryInfo : public XmlQueryInfo
+{
 public:
     XmlQueryLibraryInfo();
     ~XmlQueryLibraryInfo();
@@ -487,6 +491,7 @@ struct Client
     XmlQueryParamPtr param_ptr;
     std::thread talk_thread;      // 对话功能收音发送线程
     std::atomic_bool is_talking;  // 客户端是否正在对话
+    time_t last_access_time = 0;  // 单位/s
 };
 using ClientPtr = std::shared_ptr<Client>;
 

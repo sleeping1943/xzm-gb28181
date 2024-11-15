@@ -48,7 +48,7 @@ BinPackParameters: true
 BraceWrapping:
   AfterCaseLabel:  false
   # class定义后面
-  AfterClass:      false
+  AfterClass:      true
   # 控制语句后面
   AfterControlStatement: false
   # enum定义后面

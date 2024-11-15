@@ -27,7 +27,8 @@ using FUNC_MSG_RESPONSE =
     std::function<void(eXosip_event_t *evtp, eXosip_t *sip_context_, int code, std::shared_ptr<boost::any> param)>;
 extern std::unordered_map<std::string, FUNC_MSG_RESPONSE> msg_response_;
 
-class Handler {
+class Handler
+{
 public:
     Handler();
     virtual ~Handler();
