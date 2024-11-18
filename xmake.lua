@@ -32,6 +32,7 @@ if is_os("linux") then
 		"osipparser2",
 		"eXosip2",
 		"boost_thread",
+		"gflags",
 		"boost_filesystem"
 	)
 
@@ -55,6 +56,7 @@ elseif is_os("windows") then
 		"eXosip",
 		"Dnsapi",
 		"iconv",
+		"gflags",
 		"boost_thread-vc140-mt",
 		"boost_filesystem-vc140-mt"
 	)

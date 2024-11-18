@@ -1,3 +1,4 @@
+#include <gflags/gflags.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -18,7 +19,15 @@
 #include "utils/log.h"
 #include "xzm_defines.h"
 
+const uint32_t main_version = 1;
+const uint32_t mar_version = 1;
+const uint32_t min_version = 1;
+
 INITIALIZE_EASYLOGGINGPP
+
+DEFINE_bool(daemon, false, "是否以守护模式启动,默认否");
+DEFINE_bool(h, false, "显示帮助信息");
+DEFINE_bool(v, false, "显示版本信息");
 
 const static std::string kConfPath = "./conf/config.json";
 
@@ -33,6 +42,7 @@ void quit_server(int)
 
 int main(int argc, char **argv)
 {
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     // hlog_set_file("log/hv.log");
     hlog_disable();
     // 日志配置
@@ -40,13 +50,26 @@ int main(int argc, char **argv)
     el::Configurations conf("./log.conf");
     el::Loggers::reconfigureAllLoggers(conf);
 
-    // int ret = 0;
-    // if ((ret = daemon(1, 0)) != 0) {
-    //   LOG(ERROR) << fmt::format("Start gb28181 with daemon mode error:{}",
-    //   ret); return -1;
-    // }
-    LOG(INFO) << fmt::format("{} Started with daemon mode succefully!", argv[0]);
-
+    if (FLAGS_h) {
+        std::cout << fmt::format(
+            "Userage:./gb28181-server -option\n"
+            "-daemon true/false\n"
+            "-h true/false\n"
+            "-v true/false\n");
+        return 0;
+    }
+    if (FLAGS_v) {
+        std::cout << fmt::format("version:{}.{}.{}", main_version, mar_version, min_version) << std::endl;
+        return 0;
+    }
+    if (FLAGS_daemon == true) {
+        int ret = 0;
+        if ((ret = daemon(1, 0)) != 0) {
+            LOG(ERROR) << fmt::format("Start gb28181 with daemon mode error:{}", ret);
+            return -1;
+        }
+        LOG(INFO) << fmt::format("{} Started with daemon mode succefully!", argv[0]);
+    }
     setlocale(LC_CTYPE,
               "");  // 使ansi编码有效,用于utf8和ansi转码,但是所有lib都会受影响,有风险
     signal(SIGINT, quit_server);
