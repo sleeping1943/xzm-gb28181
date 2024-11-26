@@ -87,6 +87,37 @@ ctrl+c,程序接收信号退出执行而不是直接暴力退出
 ```
   ./test-gb28181 --gtest_filter="TestEncode.ReadFile"
 ```
+## 服务守护启动
+
+* 准备
+
+```
+  把xzm-gb28181-server.service复制到/etc/systemd/system/xzm-gb28181-server.service
+```
+
+* 启动服务
+```
+systemctl start xzm-gb28181-server
+```
+
+* 查看服务状态
+
+```
+systemctl status xzm-gb28181-server
+```
+
+* 设置服务开机自动启动
+
+```
+systemctl enable xzm-gb28181-server
+```
+
+* 关闭服务开机自动启动
+
+```
+systemctl disable xzm-gb28181-server
+```
+
 
 ## 特别感谢
     此项目参考https://gitee.com/Vanishi/BXC_SipServer
