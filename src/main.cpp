@@ -53,9 +53,9 @@ int main(int argc, char **argv)
     if (FLAGS_h) {
         std::cout << fmt::format(
             "Userage:./gb28181-server -option\n"
-            "-daemon true/false\n"
-            "-h true/false\n"
-            "-v true/false\n");
+            "-daemon true/false 是否以守护模式启动,默认否\n"
+            "-h 显示帮助信息\n"
+            "-v 显示版本信息\n");
         return 0;
     }
     if (FLAGS_v) {
